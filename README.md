@@ -13,9 +13,14 @@ It gives you three things in one window:
 
 1. **Instant search** across 515 sections of TREC rules and Texas statutes, with citations, official links, and in-document highlighting.
 2. **Scenario comparison** — paste two fact patterns and get a brief showing shared issues, unique issues, the authorities each one raises, and requirement-style sentences to verify.
-3. **Saved authorities and notes** for building your own research set.
+3. **Optional AI review** — a severity-ranked second opinion with red flags, key differences, missing facts, and a citation check.
+4. **Saved authorities and notes** for building your own research set.
 
-Everything runs offline after the library is downloaded. There are no API keys, no model calls, and no scenario text leaves the computer.
+Everything needed for search and comparison runs offline after the library is
+downloaded. AI review defaults to the Gemini free tier when a Gemini key is
+configured (otherwise the free local account), but it never runs until you ask;
+only the two scenarios and the retrieved authority text go to the provider you
+choose.
 
 ![Search and browse](docs/search.png)
 
@@ -60,7 +65,7 @@ Run `start.bat`. It uses a built EXE if one exists, otherwise it launches the Py
 **Option 2 — terminal**
 
 ```powershell
-cd trec_rules_explorer
+cd TrecRulebook
 python app.py
 ```
 
@@ -98,7 +103,7 @@ build_exe.bat onedir
 
 That writes `dist\TRECRulebook\TRECRulebook.exe`.
 
-The build machine needs internet access the first time so PyInstaller can be installed. The resulting EXE runs offline.
+The build machine needs internet access the first time so PyInstaller can be installed. The resulting EXE runs offline for search and comparison; AI review uses the provider you configure.
 
 ---
 
@@ -164,6 +169,53 @@ The comparison is deterministic, local retrieval. It uses concept vocabulary, ev
 
 The deadline and consequence sections **extract language, not legal conclusions**. They do not decide which deadline, right, or penalty applies. Confirm the triggering event, counting rule, and operative facts against the official text.
 
+### AI review (optional)
+
+The **AI review** tab is a second opinion on the same comparison. It asks a model to read both scenarios and the retrieved authorities, then returns:
+
+- a short verdict and an overall risk level;
+- **red flags**, ordered by severity (high / medium / low), each tied to a scenario, a citation, and a concrete fact to check;
+- **key differences** that change which authority matters;
+- **missing facts** that would change the answer;
+- **retrieval notes** when an authority seems absent or only tangential;
+- a **citation check**: any citation the model returns that is not one of the comparison's authorities is flagged (and a retrieved-but-not-included section is labelled separately).
+
+AI review defaults to the **Gemini free tier** when a Gemini key is configured. With no Gemini key it falls back to the free local account (DeepSeek Harness, then Claude Code). It never runs until you choose **Run AI review**. Change or disable it in **Tools → AI review → AI review settings**. Six transports are available:
+
+| Mode | What it needs | What it does |
+|---|---|---|
+| **Google Gemini API (free tier)** | A Gemini API key (typed or `GEMINI_API_KEY`). Default model `gemini-3.5-flash`. | Calls `generateContent` with `x-goog-api-key` and JSON response mode. If the run reports `SERVICE_DISABLED`, enable the Gemini API for the key's Cloud project or create a free AI Studio key. |
+| **DeepSeek Harness (local account)** | A working DeepSeek Harness install. If you are signed in, the app reuses that account through a small generated profile overlay (`%APPDATA%\TRECRulesExplorer\ai_headless_account.patch.yml`). Otherwise it uses `DEEPSEEK_API_KEY` from the environment or `%USERPROFILE%\.dsh\.env`. | Runs `dsh --profile headless` with the prompt on stdin and validates the JSON answer. Set **Review effort** to `low` (default), `high`, or `max`. |
+| **Claude Code (local CLI)** | The `claude` CLI, signed in. The app also checks `%APPDATA%\npm\claude.cmd`; you can set `CLAUDE_CODE_COMMAND`. | Runs `claude -p --output-format json --tools ""` with the prompt on stdin, disables built-in tools, and reads the `result` field. An optional model name can be set. |
+| **OpenAI-compatible API** | A base URL, model, and API key (typed in settings or read from the environment variable you name). | Calls `/chat/completions` with an optional JSON response format. Works with DeepSeek, OpenAI, Ollama, LM Studio, or a gateway. |
+| **Anthropic Claude API** | An Anthropic API key (typed or from `ANTHROPIC_API_KEY`). | Calls the Messages API (`/v1/messages`) with `x-api-key` and `anthropic-version`. The model defaults to `claude-sonnet-4-5` and is editable. |
+| **Manual (any chat)** | Nothing. | **Copy AI prompt** puts the full prompt on the clipboard; **Import AI response** validates a pasted or loaded JSON answer. The app makes no network call. |
+
+Keyboard: `Ctrl+Shift+A` runs the configured review. While it runs, the AI tab shows elapsed seconds and the timeout, and **Cancel** stops the process tree. The review is saved only in the session; use **Export review .md** or **Copy review** to keep it. The comparison export includes the AI review when one is present.
+
+**Cost.** The Gemini free tier and the local-account modes do not use a paid API key from this app. Gemini free-tier quotas and rate limits apply. The DeepSeek Harness overlay defaults to `reasoningEffort: low` to keep the review short; raise it in settings for a deeper pass. Other API modes bill the endpoint you choose.
+
+**Privacy.** Local search and the deterministic comparison never send scenario text anywhere. AI review sends both scenarios and the retrieved authority text to the provider you configure. The manual mode never contacts a provider from the app. Do not run AI review on material you cannot share with that provider.
+
+**Not legal advice.** The model can be wrong, can miss a relevant section, and can state a rule too broadly. The citation check catches invented or out-of-packet citations, not bad reasoning. Read the cited text and verify the official source.
+
+### Agent and CLI workflow
+
+The same packet can be produced and answered outside the app. This is useful for an agent that can read local files, for a batch job, or for a model that is not wired into the app:
+
+```powershell
+# 1. Build the request packet from two scenario files
+python -m trec_explorer.ai_cli packet --a-file a.txt --b-file b.txt --out packet.json
+
+# 2. An agent or model answers with the JSON schema in the packet
+python -m trec_explorer.ai_cli review --packet packet.json --response answer.json --out review.md
+
+# 3. Or run the configured transport directly
+python -m trec_explorer.ai_cli run --packet packet.json --mode harness --out review.md
+```
+
+The packet is plain JSON: scenarios, issue overlap, deterministic pre-check signals, and the selected authorities with text. `review` validates the schema, checks citations, and renders the same Markdown the app exports. `run --mode` accepts `gemini`, `harness`, `claude-cli`, `api`, or `anthropic`.
+
 ### Saved
 
 Bookmarks and notes are stored locally:
@@ -201,7 +253,7 @@ python -m unittest discover -s tests -v
 python app.py --smoke-test
 ```
 
-The test suite checks source counts, citation search, phrase search, filters, scenario ranking, related-authority links, deadline/penalty extraction, comparison grouping, and text helpers.
+The test suite checks source counts, citation search, phrase search, filters, scenario ranking, related-authority links, deadline/penalty extraction, comparison grouping, and text helpers. The AI tests cover packet construction, deterministic pre-check signals, JSON parsing and schema validation, citation checks, harness command handling, process timeout/cancel behavior, the API client against a local mock server, and the CLI round trip.
 
 ---
 
@@ -218,6 +270,8 @@ trec_rules_explorer/
     trec_library.json        # bundled snapshot (515 sections)
   trec_explorer/
     __init__.py
+    ai.py                    # optional review: packet, prompt, providers, validation
+    ai_cli.py                # packet / review / run commands for agents and scripts
     engine.py                # load, FTS5 search, scenario retrieval/compare
     ingest.py                # shared fetch/parse/build pipeline
     lexicon.py               # issue vocabulary, synonyms, and issue lenses
@@ -229,7 +283,9 @@ trec_rules_explorer/
     check_seo.py             # validate local landing-page metadata
     check_live.py            # verify the deployed page, sitemap, and assets
   tests/
+    test_ai.py
     test_engine.py
+    test_updates.py
   docs/
     index.html               # SEO landing page for GitHub Pages
     robots.txt
@@ -244,9 +300,10 @@ trec_rules_explorer/
 ## Design notes
 
 - **No dependencies** beyond the standard library and Tkinter.
-- **Offline by default**; the only network operation is the explicit refresh command.
+- **Offline by default**; local search and comparison never make a network call. AI review is opt-in and uses the transport you configure.
 - **FTS5** handles search ranking; scenario retrieval adds issue vocabulary, IDF-weighted coverage, and short issue lenses so a long standards-of-practice section does not bury a decisive statute.
 - **Citations** are preserved on every section. The detail view always links to the official source.
+- **AI output is checked, not trusted**: the answer must match a small JSON schema, and citations that are not in the comparison are flagged rather than displayed as authority.
 - **Bookmarks** are plain JSON, portable between machines.
 
 ---
@@ -263,7 +320,11 @@ Yes. It includes the Real Estate License Act (Texas Occupations Code chapter 110
 
 ### Can I compare two scenarios?
 
-Yes. Paste Scenario A and Scenario B into the Compare Scenarios tab. The app retrieves authorities for each, separates shared issues from unique issues, and produces a brief with citations and requirement-style sentences to verify.
+Yes. Paste Scenario A and Scenario B into the Compare Scenarios tab. The app retrieves authorities for each, separates shared issues from unique issues, and produces a brief with citations and requirement-style sentences to verify. The optional AI review adds severity-ranked red flags and missing facts.
+
+### Does it use AI?
+
+Only if you turn on AI review. The default comparison is deterministic local retrieval. The AI layer defaults to the Gemini free tier when a key is configured (otherwise the free local account), never runs until you ask, and sends the scenarios and retrieved authority text only to the provider you configure. It is a second opinion, not a legal conclusion, and its citations are checked against the comparison.
 
 ### Is it free?
 
@@ -271,7 +332,7 @@ Yes. The app is free and the source is public. Download the Windows build from G
 
 ### Does it work offline?
 
-Yes. The rules and statutes are bundled. Search, comparison, bookmarks, and notes work without a network connection. Official source links open in your browser when you choose them.
+Yes for search, comparison, bookmarks, and notes; the rules and statutes are bundled. AI review needs the provider you choose: the local DeepSeek Harness (which still calls its model provider), an API endpoint, or a manual copy-and-paste round trip. Local search and comparison never contact the network.
 
 ### Is this legal advice?
 
@@ -288,5 +349,6 @@ The library includes 22 TAC chapters 531 (Canons of Professional Ethics and Cond
 - **Statute scope.** The library includes TREC's four core statute chapters (Occupations Code 1101, 1102, and 1105; Property Code 221) and Occupations Code chapter 53 as related licensing law. It does not include unrelated Texas statutes, case law, local ordinances, attorney general opinions, or agency guidance outside the TREC rules pages.
 - **Freshness.** The app checks for changes at most once every 24 hours when online and stages a newer library in the user's app-data folder. A check requires a network connection; the parser can lag a very recent amendment; the official text always controls.
 - **Scenario retrieval.** Retrieval is local and deterministic. Synonyms, issue lenses, and the cross-reference graph improve recall, but the app can still miss a relevant section or surface a tangential one. It does not use a legal reasoning model.
-- **No legal conclusions.** The comparison extracts requirement, deadline, and consequence language and suggests facts to confirm. It does not decide rights, deadlines, penalties, or which rule controls. Read the full section and verify the official text.
+- **No legal conclusions.** The deterministic comparison extracts requirement, deadline, and consequence language and suggests facts to confirm. It does not decide rights, deadlines, penalties, or which rule controls.
+- **AI review is a second opinion.** It can misread a fact, apply the wrong section, or state a rule too broadly. The schema and citation checks catch malformed output and unknown citations, not bad reasoning. It is not legal advice; read the cited text and verify the official source.
 - **Not a substitute** for a Texas real estate attorney or a TREC compliance professional.

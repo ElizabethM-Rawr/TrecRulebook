@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 import re
 
-path = Path('trec_rules_explorer/docs/index.html')
+path = Path(__file__).resolve().parent.parent / 'docs' / 'index.html'
 html = path.read_text(encoding='utf-8')
 
 class P(HTMLParser):

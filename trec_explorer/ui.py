@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import json
 import os
+import queue
 import re
 import sys
 import threading
+import time
 import webbrowser
 from datetime import datetime
 from pathlib import Path
@@ -14,7 +16,7 @@ from tkinter import filedialog, messagebox, ttk
 import tkinter as tk
 from tkinter import font as tkfont
 
-from . import __version__, storage, updates
+from . import __version__, ai, storage, updates
 from .engine import (
     ComparisonReport,
     ComparisonRow,
@@ -285,6 +287,19 @@ class TrecApp:
         self.selected_row: ComparisonRow | None = None
         self.saved_current_uid: str | None = None
 
+        settings = storage.read_settings()
+        self.ai_config = ai.config_from_settings(settings)
+        if "ai_review" not in settings:
+            self.ai_config = ai.default_config()
+        self.ai_packet: ai.ComparisonPacket | None = None
+        self.ai_analysis: ai.AIAnalysis | None = None
+        self.ai_thread: threading.Thread | None = None
+        self.ai_cancel: threading.Event | None = None
+        self.ai_queue: queue.Queue = queue.Queue()
+        self.ai_started_at = 0.0
+        self.ai_timeout = self.ai_config.timeout_seconds
+        self.ai_provider_label = self.ai_config.mode_label
+
         self._configure_root()
         self._configure_styles()
         self._build_menu()
@@ -303,6 +318,7 @@ class TrecApp:
         self.root.title("TREC Rulebook — Search & Scenario Compare")
         self.root.configure(bg=BG)
         self.root.minsize(1080, 720)
+        self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         width, height = 1320, 860
         screen_w = self.root.winfo_screenwidth()
         screen_h = self.root.winfo_screenheight()
@@ -325,6 +341,11 @@ class TrecApp:
         icon.put(GOLD, to=(9, 15, 23, 18))
         self.root.iconphoto(True, icon)
         self._icon = icon
+
+    def _on_close(self) -> None:
+        if self.ai_cancel is not None:
+            self.ai_cancel.set()
+        self.root.destroy()
 
     def _configure_styles(self) -> None:
         style = ttk.Style(self.root)
@@ -385,6 +406,22 @@ class TrecApp:
             darkcolor=SURFACE,
         )
         style.map("Ghost.TButton", background=[("active", CHIP)])
+
+        style.configure(
+            "AI.TButton",
+            padding=(14, 8),
+            font=FONT_UI_BOLD,
+            background=GOLD,
+            foreground=INK,
+            bordercolor=GOLD,
+            lightcolor=GOLD,
+            darkcolor=GOLD,
+        )
+        style.map(
+            "AI.TButton",
+            background=[("active", "#a9822c"), ("disabled", "#d8c9a1")],
+            foreground=[("disabled", "#6f6753")],
+        )
 
         style.configure(
             "TCombobox",
@@ -473,10 +510,27 @@ class TrecApp:
             label="Reload updated library",
             command=self._reload_library,
         )
+        tools_menu.add_separator()
+        ai_menu = tk.Menu(tools_menu, tearoff=False, font=FONT_UI)
+        ai_menu.add_command(
+            label="Run AI review",
+            accelerator="Ctrl+Shift+A",
+            command=self.run_ai_review,
+        )
+        ai_menu.add_command(label="Copy AI prompt", command=self.copy_ai_prompt)
+        ai_menu.add_command(
+            label="Import AI response…", command=self.import_ai_response
+        )
+        ai_menu.add_separator()
+        ai_menu.add_command(
+            label="AI review settings…", command=self.show_ai_settings
+        )
+        tools_menu.add_cascade(label="AI review", menu=ai_menu)
         menubar.add_cascade(label="Tools", menu=tools_menu)
 
         help_menu = tk.Menu(menubar, tearoff=False, font=FONT_UI)
         help_menu.add_command(label="Quick start", command=self.show_help)
+        help_menu.add_command(label="How AI review works", command=self._show_ai_help)
         help_menu.add_command(label="Official sources", command=self.open_official_sources)
         help_menu.add_command(label="About this library", command=self.show_about)
         help_menu.add_separator()
@@ -584,6 +638,8 @@ class TrecApp:
         self.root.bind("<Control-e>", lambda _e: self.export_comparison())
         self.root.bind("<Control-E>", lambda _e: self.export_comparison())
         self.root.bind("<Control-Return>", lambda _e: self.run_comparison())
+        self.root.bind("<Control-Shift-A>", lambda _e: self.run_ai_review())
+        self.root.bind("<Control-Shift-a>", lambda _e: self.run_ai_review())
         self.root.bind("<F1>", lambda _e: self.show_help())
         self.root.bind("<Control-Key-1>", lambda _e: self.notebook.select(self.search_tab))
         self.root.bind("<Control-Key-2>", lambda _e: self.notebook.select(self.compare_tab))
@@ -1347,8 +1403,14 @@ class TrecApp:
             action_row, text="Clear both", style="Ghost.TButton",
             command=self._clear_scenarios,
         ).grid(row=0, column=2, padx=(6, 0))
+        self.ai_btn = ttk.Button(
+            action_row, text="AI review", style="AI.TButton",
+            command=self.run_ai_review,
+        )
+        self.ai_btn.grid(row=0, column=3, padx=(10, 0))
         self.compare_status = tk.Label(
-            action_row, text="Scenario comparison uses local keyword and issue-lens retrieval — no network call.",
+            action_row,
+            text="Local retrieval. AI review is optional and runs only when you ask.",
             bg=SURFACE, fg=FAINT, font=FONT_SMALL, anchor="w",
         )
         self.compare_status.grid(row=0, column=4, sticky="w", padx=(16, 0))
@@ -1418,10 +1480,13 @@ class TrecApp:
 
         self.brief_tab = tk.Frame(self.compare_notebook, bg=SURFACE)
         self.auth_tab = tk.Frame(self.compare_notebook, bg=SURFACE)
+        self.ai_tab = tk.Frame(self.compare_notebook, bg=SURFACE)
         self.compare_notebook.add(self.brief_tab, text="  Comparison brief  ")
         self.compare_notebook.add(self.auth_tab, text="  Authority detail  ")
+        self.compare_notebook.add(self.ai_tab, text="  AI review  ")
         self._build_brief_tab()
         self._build_authority_tab()
+        self._build_ai_tab()
         self._render_comparison_empty()
         self.root.after_idle(self._set_compare_sash)
 
@@ -1519,7 +1584,7 @@ class TrecApp:
             side="left", padx=6, pady=8
         )
         tk.Label(
-            footer, text="Built from the local library; no scenario text leaves this computer.",
+            footer, text="Built locally. AI review, when used, is disclosed in its tab.",
             bg=SURFACE_ALT, fg=FAINT, font=("Segoe UI", 8),
         ).pack(side="right", padx=18)
 
@@ -1531,6 +1596,1012 @@ class TrecApp:
         self.auth_container.grid_rowconfigure(0, weight=1)
         self.auth_container.grid_columnconfigure(0, weight=1)
         self._render_authority_empty()
+
+    def _build_ai_tab(self) -> None:
+        self.ai_tab.grid_rowconfigure(2, weight=1)
+        self.ai_tab.grid_columnconfigure(0, weight=1)
+
+        head = tk.Frame(self.ai_tab, bg=SURFACE)
+        head.grid(row=0, column=0, sticky="ew", padx=18, pady=(12, 2))
+        head.grid_columnconfigure(0, weight=1)
+        title_box = tk.Frame(head, bg=SURFACE)
+        title_box.grid(row=0, column=0, sticky="w")
+        tk.Label(
+            title_box, text="AI review", bg=SURFACE, fg=INK,
+            font=FONT_DISPLAY, anchor="w",
+        ).pack(anchor="w")
+        tk.Label(
+            title_box,
+            text="An optional second opinion: severity-ranked red flags, key "
+                 "differences, and the facts that would change the analysis.",
+            bg=SURFACE, fg=MUTED, font=FONT_SMALL, anchor="w",
+        ).pack(anchor="w", pady=(2, 0))
+        head_actions = tk.Frame(head, bg=SURFACE)
+        head_actions.grid(row=0, column=1, sticky="e")
+        ttk.Button(
+            head_actions, text="Settings…", style="Ghost.TButton",
+            command=self.show_ai_settings,
+        ).pack(side="left", padx=(0, 6))
+        ttk.Button(
+            head_actions, text="How it works", style="Ghost.TButton",
+            command=self._show_ai_help,
+        ).pack(side="left")
+
+        bar = tk.Frame(self.ai_tab, bg=SURFACE)
+        bar.grid(row=1, column=0, sticky="ew", padx=18, pady=(6, 6))
+        self.ai_run_btn = ttk.Button(
+            bar, text="Run AI review", style="AI.TButton",
+            command=self.run_ai_review,
+        )
+        self.ai_run_btn.pack(side="left")
+        self.ai_cancel_btn = ttk.Button(
+            bar, text="Cancel", style="Ghost.TButton",
+            command=self._cancel_ai, state="disabled",
+        )
+        self.ai_cancel_btn.pack(side="left", padx=(8, 0))
+        self.ai_copy_prompt_btn = ttk.Button(
+            bar, text="Copy AI prompt", style="Ghost.TButton",
+            command=self.copy_ai_prompt,
+        )
+        self.ai_copy_prompt_btn.pack(side="left", padx=(8, 0))
+        self.ai_import_btn = ttk.Button(
+            bar, text="Import AI response…", style="Ghost.TButton",
+            command=self.import_ai_response,
+        )
+        self.ai_import_btn.pack(side="left", padx=(6, 0))
+        self.ai_status = tk.Label(
+            bar, text="", bg=SURFACE, fg=FAINT, font=FONT_SMALL, anchor="w",
+        )
+        self.ai_status.pack(side="left", padx=(16, 0))
+
+        wrap = tk.Frame(self.ai_tab, bg=SURFACE)
+        wrap.grid(row=2, column=0, sticky="nsew", padx=18, pady=(0, 8))
+        wrap.grid_rowconfigure(0, weight=1)
+        wrap.grid_columnconfigure(0, weight=1)
+        self.ai_text = tk.Text(
+            wrap, wrap="word", bg=SURFACE, fg=INK, bd=0, relief="flat",
+            font=("Segoe UI", 10), padx=4, pady=2, highlightthickness=0,
+            spacing1=2, spacing3=5, cursor="arrow",
+        )
+        self.ai_text.grid(row=0, column=0, sticky="nsew")
+        ai_scroll = ttk.Scrollbar(wrap, orient="vertical", command=self.ai_text.yview)
+        ai_scroll.grid(row=0, column=1, sticky="ns")
+        self.ai_text.configure(yscrollcommand=ai_scroll.set)
+        self.ai_text.tag_configure("kicker", foreground=GOLD, font=("Segoe UI", 8, "bold"))
+        self.ai_text.tag_configure("h1", foreground=INK, font=("Georgia", 20, "bold"), spacing1=4, spacing3=8)
+        self.ai_text.tag_configure("h2", foreground=TEAL, font=("Segoe UI", 9, "bold"), spacing1=14, spacing3=5)
+        self.ai_text.tag_configure("body", foreground=INK, font=("Segoe UI", 10), spacing3=4)
+        self.ai_text.tag_configure("bullet", foreground=INK, font=("Segoe UI", 10), lmargin1=16, lmargin2=30, spacing3=4)
+        self.ai_text.tag_configure("cite", foreground=TEAL, font=("Consolas", 9, "bold"))
+        self.ai_text.tag_configure("muted", foreground=MUTED, font=("Segoe UI", 9))
+        self.ai_text.tag_configure("warn", foreground="#7b5a2a", background="#f7edda", font=("Segoe UI", 9))
+        self.ai_text.tag_configure("divider", foreground=BORDER)
+        self.ai_text.tag_configure(
+            "verdict", foreground=INK, background=CHIP, font=("Segoe UI", 10),
+            lmargin1=14, lmargin2=14, rmargin=14, spacing1=8, spacing3=8,
+        )
+        self.ai_text.tag_configure("flagtitle", foreground=INK, font=("Segoe UI", 10, "bold"), spacing3=2)
+        self.ai_text.tag_configure("sev-high", foreground=BRICK, font=("Segoe UI", 9, "bold"))
+        self.ai_text.tag_configure("sev-medium", foreground="#8a5a1f", font=("Segoe UI", 9, "bold"))
+        self.ai_text.tag_configure("sev-low", foreground=MUTED, font=("Segoe UI", 9, "bold"))
+
+        footer = tk.Frame(self.ai_tab, bg=SURFACE_ALT)
+        footer.grid(row=3, column=0, sticky="ew")
+        ttk.Button(
+            footer, text="Copy review", style="Ghost.TButton",
+            command=self.copy_ai_review,
+        ).pack(side="left", padx=(18, 6), pady=8)
+        ttk.Button(
+            footer, text="Export review .md…", style="Ghost.TButton",
+            command=self.export_ai_review,
+        ).pack(side="left", padx=6, pady=8)
+        self.ai_privacy = tk.Label(
+            footer, text="", bg=SURFACE_ALT, fg=FAINT, font=("Segoe UI", 8),
+        )
+        self.ai_privacy.pack(side="right", padx=18)
+
+    # -- AI review -----------------------------------------------------------
+    def _ai_mode_status(self) -> tuple[str, str]:
+        config = self.ai_config
+        if config.mode == "off":
+            return "Off — local comparison only", FAINT
+        if config.mode == "gemini":
+            if config.gemini_key_value:
+                return f"Ready · {config.gemini_model} (free tier)", TEAL
+            return (
+                f"Gemini key missing — set {config.gemini_api_key_env}",
+                BRICK,
+            )
+        if config.mode == "harness":
+            command = ai.find_harness_command(config.harness_command)
+            if not command:
+                return "Harness not found — set its path in Settings", BRICK
+            if ai.harness_auth_available():
+                return "Ready · DeepSeek Harness account (free)", TEAL
+            return "Harness found — sign in or set DEEPSEEK_API_KEY", BRICK
+        if config.mode == "claude-cli":
+            command = ai.find_claude_command(config.claude_command)
+            if not command:
+                return "Claude Code not found — set its path in Settings", BRICK
+            return "Ready · Claude Code", TEAL
+        if config.mode == "anthropic":
+            if config.anthropic_key_value:
+                return f"Ready · {config.anthropic_model}", TEAL
+            return (
+                f"Anthropic key missing — set {config.anthropic_api_key_env}",
+                BRICK,
+            )
+        if config.api_key_value:
+            return f"Ready · {config.api_model}", TEAL
+        return f"API key missing — set {config.api_key_env}", BRICK
+
+    def _set_ai_status(self, text: str, color: str = FAINT) -> None:
+        try:
+            if self.ai_status.winfo_exists():
+                self.ai_status.configure(text=text, fg=color)
+        except tk.TclError:
+            pass
+
+    def _ai_privacy_text(self) -> str:
+        if self.ai_config.mode == "gemini":
+            return (
+                "Sends the scenarios and authority text to "
+                f"{self.ai_config.gemini_api_base} (Google Gemini)."
+            )
+        if self.ai_config.mode == "harness":
+            return "DeepSeek Harness is local; its model provider receives the scenarios and authority text."
+        if self.ai_config.mode == "claude-cli":
+            return "Claude Code is local; the Anthropic account it uses receives the scenarios and authority text."
+        if self.ai_config.mode == "anthropic":
+            return f"Sends the scenarios and authority text to {self.ai_config.anthropic_api_base}."
+        if self.ai_config.mode == "api":
+            return f"Sends the scenarios and authority text to {self.ai_config.api_base_url}."
+        return "Off by default. Nothing leaves this computer unless you copy the prompt yourself."
+
+    def _ai_write(self, text: str, tag: str = "body") -> None:
+        self.ai_text.insert("end", text, tag)
+
+    def _render_ai_empty(self) -> None:
+        self.ai_analysis = None
+        self.ai_packet = None
+        self.ai_text.configure(state="normal")
+        self.ai_text.delete("1.0", "end")
+        self._ai_write("AI REVIEW\n", "kicker")
+        self._ai_write("A second opinion on the comparison\n", "h1")
+        self._ai_write(
+            "The comparison brief is built locally from the library. AI review "
+            "is an optional extra pass: it asks a model to read the same two "
+            "scenarios and the retrieved authorities, then returns red flags, "
+            "key differences, and the facts that would change the analysis.\n\n",
+            "body",
+        )
+        self._ai_write(
+            "Run a comparison first, then choose Run AI review. You can also "
+            "copy the prepared prompt into any AI chat and import its JSON answer.\n",
+            "muted",
+        )
+        self.ai_text.configure(state="disabled")
+        self.ai_privacy.configure(text=self._ai_privacy_text())
+        status, color = self._ai_mode_status()
+        self._set_ai_status(status, color)
+
+    def _render_ai_idle(self, report: ComparisonReport | None) -> None:
+        self.ai_analysis = None
+        self.ai_text.configure(state="normal")
+        self.ai_text.delete("1.0", "end")
+        self._ai_write("AI REVIEW\n", "kicker")
+        self._ai_write("Optional second opinion\n", "h1")
+        self._ai_write(
+            "The local brief is deterministic. AI review adds judgment: which "
+            "differences are likely to matter, what facts are missing, and "
+            "whether the citations hold up.\n",
+            "body",
+        )
+        signals = (
+            self.ai_packet.payload.get("signals", []) if self.ai_packet else []
+        )
+        self._ai_write("\nLOCAL PRE-CHECK\n", "h2")
+        if signals:
+            for signal in signals[:12]:
+                self._ai_write(
+                    f"• {signal.get('side')} · {signal.get('label')} — "
+                    f"{signal.get('detail')}\n",
+                    "bullet",
+                )
+        else:
+            self._ai_write("No pre-check notices.\n", "muted")
+
+        self._ai_write("\nHOW TO USE\n", "h2")
+        self._ai_write(
+            "1. Run AI review uses the provider in Settings: Google Gemini "
+            "(free tier) by default, or the free local DeepSeek Harness / "
+            "Claude Code account, or another API.\n"
+            "2. Copy AI prompt puts the full prompt on the clipboard; paste it "
+            "into any AI chat, then use Import AI response with the JSON it returns.\n"
+            "3. Scores are still relative, and the model can be wrong. Verify "
+            "every citation against the official text.\n",
+            "body",
+        )
+        self.ai_text.configure(state="disabled")
+        self.ai_privacy.configure(text=self._ai_privacy_text())
+        status, color = self._ai_mode_status()
+        self._set_ai_status(status, color)
+
+    def _render_ai_analysis(self, analysis: ai.AIAnalysis) -> None:
+        self.ai_text.configure(state="normal")
+        self.ai_text.delete("1.0", "end")
+        self._ai_write("AI REVIEW\n", "kicker")
+        self._ai_write("Second opinion on the comparison\n", "h1")
+        self._ai_write(
+            f"{analysis.risk_level.upper()} risk  ·  {analysis.confidence} confidence  "
+            f"·  {analysis.model or 'model unknown'}  ·  "
+            f"{ai.MODE_LABELS.get(analysis.mode, analysis.mode or 'manual')}\n",
+            "muted",
+        )
+        self._ai_write("─" * 72 + "\n", "divider")
+        self._ai_write(analysis.verdict + "\n\n", "verdict")
+
+        self._ai_write(f"\nRED FLAGS ({len(analysis.red_flags)})\n", "h2")
+        if not analysis.red_flags:
+            self._ai_write("None identified from these facts.\n", "body")
+        for flag in analysis.red_flags:
+            side = {"A": "Scenario A", "B": "Scenario B"}.get(
+                flag.scenario, "Both scenarios"
+            )
+            self._ai_write(f"{flag.severity.upper()}  ", f"sev-{flag.severity}")
+            self._ai_write(f"{flag.title}\n", "flagtitle")
+            self._ai_write(f"{side}\n", "muted")
+            if flag.why_it_matters:
+                self._ai_write(flag.why_it_matters + "\n", "body")
+            if flag.citations:
+                self._ai_write("Citations: " + ", ".join(flag.citations) + "\n", "cite")
+            if flag.what_to_check:
+                self._ai_write("Check: " + flag.what_to_check + "\n", "muted")
+            self._ai_write("\n", "body")
+
+        for heading, values in (
+            ("KEY DIFFERENCES", analysis.key_differences),
+            ("FACTS THAT WOULD CHANGE THE ANALYSIS", analysis.missing_facts),
+            ("RETRIEVAL NOTES", analysis.retrieval_notes),
+            ("CITATION CHECK", analysis.citation_warnings),
+        ):
+            if not values:
+                continue
+            self._ai_write(f"\n{heading}\n", "h2")
+            for value in values:
+                tag = "warn" if heading == "CITATION CHECK" else "bullet"
+                self._ai_write("• " + value + "\n", tag)
+
+        self._ai_write("\n" + "─" * 72 + "\n", "divider")
+        self._ai_write(
+            "AI-generated second opinion. It can be wrong, can miss a relevant "
+            "authority, and is not legal advice. Confirm every citation against "
+            "the official source.\n",
+            "warn",
+        )
+        self.ai_text.configure(state="disabled")
+        self.ai_text.yview_moveto(0)
+        self.ai_privacy.configure(text=self._ai_privacy_text())
+
+    def _render_ai_error(self, error: ai.AIReviewError) -> None:
+        self.ai_text.configure(state="normal")
+        self.ai_text.delete("1.0", "end")
+        self._ai_write("AI REVIEW\n", "kicker")
+        self._ai_write("The review did not run\n", "h1")
+        self._ai_write(f"[{error.code}] {error}\n\n", "warn")
+        if error.detail:
+            self._ai_write(error.detail + "\n\n", "muted")
+        self._ai_write(
+            "The local comparison is still available in the brief. You can also "
+            "copy the prompt and import an answer from another AI chat.\n",
+            "body",
+        )
+        self.ai_text.configure(state="disabled")
+
+    def _ai_ready(self) -> bool:
+        if not self.comparison:
+            messagebox.showinfo(
+                "Compare first",
+                "Run a scenario comparison before asking for an AI review.",
+                parent=self.root,
+            )
+            return False
+        if self.ai_config.mode == "off":
+            if messagebox.askyesno(
+                "AI review is off",
+                "AI review is off. Open AI review settings to enable DeepSeek "
+                "Harness (local) or an OpenAI-compatible API?\n\n"
+                "You can also use Copy AI prompt and Import AI response without "
+                "enabling anything.",
+                parent=self.root,
+            ):
+                self.show_ai_settings()
+            return False
+        if (
+            self.ai_config.mode == "harness"
+            and not ai.find_harness_command(self.ai_config.harness_command)
+        ):
+            messagebox.showerror(
+                "DeepSeek Harness not found",
+                "The dsh launcher was not found. Install DeepSeek Harness, or "
+                "set the path to dsh.cmd in AI review settings (or the "
+                "TREC_DSH_COMMAND environment variable).",
+                parent=self.root,
+            )
+            return False
+        if self.ai_config.mode == "gemini" and not self.ai_config.gemini_key_value:
+            messagebox.showerror(
+                "Gemini API key missing",
+                "Enter a Gemini API key in AI review settings, or set the "
+                f"{self.ai_config.gemini_api_key_env} environment variable. "
+                "A free key is available at https://aistudio.google.com/apikey.",
+                parent=self.root,
+            )
+            return False
+        if self.ai_config.mode == "harness" and not ai.harness_auth_available():
+            if not messagebox.askyesno(
+                "No harness sign-in found",
+                "DeepSeek Harness is installed, but this app could not find a "
+                "signed-in account, DEEPSEEK_API_KEY, or a harness .env file. "
+                "The run may fail.\n\nTry it anyway?",
+                parent=self.root,
+            ):
+                return False
+        if (
+            self.ai_config.mode == "claude-cli"
+            and not ai.find_claude_command(self.ai_config.claude_command)
+        ):
+            messagebox.showerror(
+                "Claude Code not found",
+                "The Claude Code CLI was not found. Install it with "
+                "`npm install -g @anthropic-ai/claude-code`, sign in, or set "
+                "CLAUDE_CODE_COMMAND to the launcher.",
+                parent=self.root,
+            )
+            return False
+        if self.ai_config.mode == "anthropic" and not self.ai_config.anthropic_key_value:
+            messagebox.showerror(
+                "Anthropic API key missing",
+                "Enter an Anthropic API key in AI review settings, or set the "
+                f"{self.ai_config.anthropic_api_key_env} environment variable.",
+                parent=self.root,
+            )
+            return False
+        if self.ai_config.mode == "api" and not self.ai_config.api_key_value:
+            messagebox.showerror(
+                "API key missing",
+                "Enter an API key in AI review settings, or set the "
+                f"{self.ai_config.api_key_env} environment variable.",
+                parent=self.root,
+            )
+            return False
+        return True
+
+    def run_ai_review(self) -> None:
+        if self.ai_thread and self.ai_thread.is_alive():
+            return
+        if not self._ai_ready():
+            return
+        self.ai_packet = ai.build_packet(
+            self.comparison, self.ai_config, library_meta=self.library.meta
+        )
+        self.ai_cancel = threading.Event()
+        self.ai_queue = queue.Queue()
+        self.ai_started_at = time.monotonic()
+        self.ai_timeout = self.ai_config.timeout_seconds
+        self.ai_provider_label = self.ai_config.mode_label
+        self.ai_run_btn.configure(state="disabled")
+        self.ai_cancel_btn.configure(state="normal")
+        self._set_ai_status("Starting the review…", TEAL)
+        self.notebook.select(self.compare_tab)
+        self.compare_notebook.select(self.ai_tab)
+        self.ai_thread = threading.Thread(
+            target=self._ai_worker,
+            args=(self.ai_packet, self.ai_config, self.ai_cancel),
+            daemon=True,
+        )
+        self.ai_thread.start()
+        self.root.after(60, self._poll_ai)
+        self.root.after(1000, self._ai_heartbeat)
+
+    def _ai_heartbeat(self) -> None:
+        if self.ai_thread is None:
+            return
+        if self.ai_cancel is not None and self.ai_cancel.is_set():
+            self._set_ai_status("Cancelling…", MUTED)
+        else:
+            elapsed = int(time.monotonic() - self.ai_started_at)
+            self._set_ai_status(
+                f"{self.ai_provider_label} · {elapsed}s elapsed "
+                f"(limit {self.ai_timeout}s) · Cancel to stop",
+                TEAL,
+            )
+        try:
+            self.root.after(1000, self._ai_heartbeat)
+        except tk.TclError:
+            pass
+
+    def _ai_worker(self, packet, config, cancel) -> None:
+        """Background worker; it only touches the queue, never Tk."""
+        def progress(message: str) -> None:
+            self.ai_queue.put(("progress", message, packet))
+
+        try:
+            analysis = ai.run_review(
+                packet, config, cancel=cancel, progress=progress
+            )
+        except ai.AIReviewError as exc:
+            self.ai_queue.put(("error", exc, packet))
+        except Exception as exc:  # pragma: no cover - defensive worker path
+            self.ai_queue.put(
+                ("error", ai.AIReviewError("harness_failed", str(exc)), packet)
+            )
+        else:
+            self.ai_queue.put(("done", analysis, packet))
+
+    def _ai_reset_run(self) -> None:
+        self.ai_thread = None
+        self.ai_cancel = None
+        self.ai_run_btn.configure(state="normal")
+        self.ai_cancel_btn.configure(state="disabled")
+
+    def _poll_ai(self) -> None:
+        """Drain worker messages on the Tk main thread."""
+        try:
+            while True:
+                kind, payload, packet = self.ai_queue.get_nowait()
+                if kind == "progress":
+                    self._set_ai_status(str(payload), TEAL)
+                elif kind == "done":
+                    self._ai_finished(payload, None, packet)
+                elif kind == "error":
+                    self._ai_finished(None, payload, packet)
+        except queue.Empty:
+            pass
+        if self.ai_thread is not None:
+            try:
+                self.root.after(60, self._poll_ai)
+            except tk.TclError:
+                pass
+
+    @staticmethod
+    def _flag_count(count: int) -> str:
+        return f"{count} red flag" + ("" if count == 1 else "s")
+
+    def _ai_finished(
+        self,
+        analysis: ai.AIAnalysis | None,
+        error: ai.AIReviewError | None,
+        packet: ai.ComparisonPacket | None = None,
+    ) -> None:
+        try:
+            if not self.root.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        if packet is not None and packet is not self.ai_packet:
+            # The comparison changed while the worker was running.
+            self._ai_reset_run()
+            return
+        self.ai_thread = None
+        self.ai_cancel = None
+        self.ai_run_btn.configure(state="normal")
+        self.ai_cancel_btn.configure(state="disabled")
+        if error is not None:
+            if error.code == "cancelled":
+                self._set_ai_status("Review cancelled", MUTED)
+                return
+            self._set_ai_status("AI review failed", BRICK)
+            self._render_ai_error(error)
+            messagebox.showerror(
+                "AI review failed",
+                f"{error}\n\n{error.detail}".strip()[:1200],
+                parent=self.root,
+            )
+            return
+        assert analysis is not None
+        self.ai_analysis = analysis
+        self._render_ai_analysis(analysis)
+        self.compare_notebook.select(self.ai_tab)
+        self._set_ai_status(
+            f"Review ready · {analysis.risk_level.upper()} risk · "
+            f"{self._flag_count(len(analysis.red_flags))}",
+            TEAL,
+        )
+        self._flash_status("AI review ready")
+
+    def _cancel_ai(self) -> None:
+        if self.ai_cancel is not None:
+            self.ai_cancel.set()
+            self._set_ai_status("Cancelling…", MUTED)
+
+    def copy_ai_prompt(self) -> None:
+        if not self.comparison:
+            messagebox.showinfo(
+                "Compare first",
+                "Run a scenario comparison before copying an AI prompt.",
+                parent=self.root,
+            )
+            return
+        packet = ai.build_packet(
+            self.comparison, self.ai_config, library_meta=self.library.meta
+        )
+        self.ai_packet = packet
+        self.root.clipboard_clear()
+        self.root.clipboard_append(packet.prompt)
+        self._flash_status("AI prompt copied — paste it into your AI chat")
+        self._set_ai_status(
+            "Prompt copied. Paste the response with Import AI response…", TEAL
+        )
+
+    def import_ai_response(self) -> None:
+        if not self.comparison and not self.ai_packet:
+            messagebox.showinfo(
+                "Compare first",
+                "Run a scenario comparison before importing an AI response.",
+                parent=self.root,
+            )
+            return
+        packet = ai.build_packet(
+            self.comparison, self.ai_config, library_meta=self.library.meta
+        ) if self.comparison else self.ai_packet
+        if packet is None:
+            messagebox.showinfo(
+                "Compare first",
+                "Run a scenario comparison before importing an AI response.",
+                parent=self.root,
+            )
+            return
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Import AI response")
+        dialog.configure(bg=BG)
+        dialog.geometry("820x640")
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        tk.Label(
+            dialog, text="Paste the JSON response", bg=BG, fg=INK,
+            font=FONT_DISPLAY, anchor="w",
+        ).pack(fill="x", padx=18, pady=(14, 2))
+        tk.Label(
+            dialog,
+            text="The response must be the JSON object described in the prompt. "
+                 "Citations that are not in the comparison are flagged.",
+            bg=BG, fg=MUTED, font=FONT_SMALL, anchor="w",
+        ).pack(fill="x", padx=18, pady=(0, 8))
+
+        wrap = tk.Frame(dialog, bg=SURFACE, highlightbackground=BORDER, highlightthickness=1)
+        wrap.pack(fill="both", expand=True, padx=18, pady=(0, 10))
+        wrap.grid_rowconfigure(0, weight=1)
+        wrap.grid_columnconfigure(0, weight=1)
+        text = tk.Text(
+            wrap, wrap="word", bg=SURFACE, fg=INK, bd=0, relief="flat",
+            font=("Consolas", 9), padx=10, pady=8, highlightthickness=0,
+        )
+        text.grid(row=0, column=0, sticky="nsew")
+        scroll = ttk.Scrollbar(wrap, orient="vertical", command=text.yview)
+        scroll.grid(row=0, column=1, sticky="ns")
+        text.configure(yscrollcommand=scroll.set)
+
+        buttons = tk.Frame(dialog, bg=BG)
+        buttons.pack(fill="x", padx=18, pady=(0, 14))
+
+        def load_file() -> None:
+            path = filedialog.askopenfilename(
+                parent=dialog,
+                title="Load AI response",
+                filetypes=(("JSON", "*.json"), ("Text", "*.txt"), ("All files", "*.*")),
+            )
+            if not path:
+                return
+            try:
+                text.delete("1.0", "end")
+                text.insert("1.0", Path(path).read_text(encoding="utf-8"))
+            except OSError as exc:
+                messagebox.showerror("Could not read file", str(exc), parent=dialog)
+
+        def apply() -> None:
+            value = text.get("1.0", "end").strip()
+            if not value:
+                messagebox.showinfo(
+                    "Nothing to import", "Paste the AI response first.", parent=dialog
+                )
+                return
+            try:
+                analysis = ai.parse_analysis(value, packet)
+            except ai.AIReviewError as exc:
+                messagebox.showerror(
+                    "Could not read the response",
+                    f"{exc}\n\n{exc.detail}".strip()[:1200],
+                    parent=dialog,
+                )
+                return
+            self.ai_analysis = analysis
+            self._render_ai_analysis(analysis)
+            self.compare_notebook.select(self.ai_tab)
+            self._set_ai_status(
+                f"Imported review · {analysis.risk_level.upper()} risk · "
+                f"{self._flag_count(len(analysis.red_flags))}",
+                TEAL,
+            )
+            dialog.destroy()
+            self._flash_status("AI response imported")
+
+        ttk.Button(buttons, text="Load file…", style="Ghost.TButton", command=load_file).pack(
+            side="left"
+        )
+        ttk.Button(buttons, text="Cancel", style="Ghost.TButton", command=dialog.destroy).pack(
+            side="right"
+        )
+        ttk.Button(buttons, text="Apply", style="Accent.TButton", command=apply).pack(
+            side="right", padx=(0, 8)
+        )
+        text.focus_set()
+
+    def copy_ai_review(self) -> None:
+        if not self.ai_analysis:
+            messagebox.showinfo(
+                "No AI review yet", "Run or import an AI review first.", parent=self.root
+            )
+            return
+        self.root.clipboard_clear()
+        self.root.clipboard_append(self.ai_analysis.to_markdown())
+        self._flash_status("AI review copied")
+
+    def export_ai_review(self) -> None:
+        if not self.ai_analysis:
+            messagebox.showinfo(
+                "No AI review yet", "Run or import an AI review first.", parent=self.root
+            )
+            return
+        path = filedialog.asksaveasfilename(
+            parent=self.root,
+            title="Export AI review",
+            defaultextension=".md",
+            initialfile=f"trec-ai-review-{datetime.now().strftime('%Y%m%d')}.md",
+            filetypes=(("Markdown", "*.md"), ("Text", "*.txt"), ("All files", "*.*")),
+        )
+        if not path:
+            return
+        Path(path).write_text(self.ai_analysis.to_markdown(), encoding="utf-8")
+        self._flash_status("AI review exported")
+
+    def show_ai_settings(self) -> None:
+        dialog = tk.Toplevel(self.root)
+        dialog.title("AI review settings")
+        dialog.configure(bg=BG)
+        dialog.geometry("760x680")
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        body = tk.Frame(dialog, bg=BG)
+        body.pack(fill="both", expand=True, padx=20, pady=(14, 8))
+        body.grid_columnconfigure(0, weight=1)
+
+        tk.Label(
+            body, text="AI review settings", bg=BG, fg=INK, font=FONT_DISPLAY,
+            anchor="w",
+        ).grid(row=0, column=0, sticky="w")
+        tk.Label(
+            body,
+            text="Default is the free local account. Paid API keys are optional. "
+                 "Local search and comparison never call a model.",
+            bg=BG, fg=MUTED, font=FONT_SMALL, anchor="w", justify="left",
+            wraplength=720,
+        ).grid(row=1, column=0, sticky="w", pady=(2, 10))
+
+        mode_var = tk.StringVar(value=ai.MODE_LABELS[self.ai_config.mode])
+        mode_row = tk.Frame(body, bg=BG)
+        mode_row.grid(row=2, column=0, sticky="ew", pady=(0, 10))
+        mode_row.grid_columnconfigure(1, weight=1)
+        tk.Label(
+            mode_row, text="Provider", bg=BG, fg=INK, font=FONT_SMALL_BOLD,
+            anchor="w",
+        ).grid(row=0, column=0, sticky="w", padx=(0, 12))
+        ttk.Combobox(
+            mode_row,
+            values=list(ai.MODE_LABELS.values()),
+            textvariable=mode_var,
+            state="readonly",
+        ).grid(row=0, column=1, sticky="ew")
+
+        tabs = ttk.Notebook(body)
+        tabs.grid(row=3, column=0, sticky="nsew", pady=(0, 8))
+        body.grid_rowconfigure(3, weight=1)
+        local_tab = tk.Frame(tabs, bg=BG)
+        gemini_tab = tk.Frame(tabs, bg=BG)
+        api_tab = tk.Frame(tabs, bg=BG)
+        tabs.add(local_tab, text="  Local CLIs  ")
+        tabs.add(gemini_tab, text="  Gemini  ")
+        tabs.add(api_tab, text="  Other APIs  ")
+        for tab in (local_tab, gemini_tab, api_tab):
+            tab.grid_columnconfigure(1, weight=1)
+
+        def section(parent, text_value: str, row: int) -> int:
+            tk.Label(
+                parent, text=text_value, bg=BG, fg=TEAL,
+                font=("Segoe UI", 8, "bold"), anchor="w",
+            ).grid(row=row, column=0, columnspan=2, sticky="w", pady=(8, 4))
+            return row + 1
+
+        def field_label(parent, text_value: str, row: int) -> int:
+            tk.Label(
+                parent, text=text_value, bg=BG, fg=INK, font=FONT_SMALL,
+                anchor="w",
+            ).grid(row=row, column=0, sticky="w", padx=(0, 12), pady=(0, 6))
+            return row
+
+        def field_entry(
+            parent, var: tk.StringVar, row: int, *, show: str = ""
+        ) -> tk.Entry:
+            entry = tk.Entry(
+                parent, textvariable=var, bg=SURFACE, fg=INK, relief="flat",
+                highlightthickness=1, highlightbackground=BORDER,
+                highlightcolor=TEAL, font=FONT_UI, show=show,
+            )
+            entry.grid(row=row, column=1, sticky="ew", pady=(0, 6), ipady=4)
+            return entry
+
+        def labeled_entry(
+            parent, text_value: str, var: tk.StringVar, row: int, *, show: str = ""
+        ) -> int:
+            field_label(parent, text_value, row)
+            field_entry(parent, var, row, show=show)
+            return row + 1
+
+        # ---- local CLIs -------------------------------------------------
+        row = 0
+        row = section(local_tab, "DEEPSEEK HARNESS (FREE LOCAL ACCOUNT)", row)
+        harness_var = tk.StringVar(value=self.ai_config.harness_command)
+        field_label(local_tab, "dsh launcher", row)
+        harness_row = tk.Frame(local_tab, bg=BG)
+        harness_row.grid(row=row, column=1, sticky="ew", pady=(0, 4))
+        harness_row.grid_columnconfigure(0, weight=1)
+        tk.Entry(
+            harness_row, textvariable=harness_var, bg=SURFACE, fg=INK,
+            relief="flat", highlightthickness=1, highlightbackground=BORDER,
+            highlightcolor=TEAL, font=FONT_UI,
+        ).grid(row=0, column=0, sticky="ew", ipady=4)
+        harness_status = tk.Label(
+            local_tab, text="", bg=BG, fg=FAINT, font=("Segoe UI", 8),
+            anchor="w", justify="left", wraplength=560,
+        )
+        harness_status.grid(row=row + 1, column=1, sticky="w", pady=(0, 6))
+
+        def detect_harness(auto: bool = False) -> None:
+            current = harness_var.get().strip()
+            found = ai.find_harness_command("" if auto else current)
+            if found:
+                if auto or not current:
+                    harness_var.set(found)
+                harness_status.configure(text="Found: " + found, fg=TEAL)
+            else:
+                harness_status.configure(
+                    text="Not found. Install DeepSeek Harness or set TREC_DSH_COMMAND.",
+                    fg=BRICK,
+                )
+
+        ttk.Button(
+            harness_row, text="Auto-detect", style="Ghost.TButton",
+            command=lambda: detect_harness(True),
+        ).grid(row=0, column=1, padx=(8, 0))
+        row += 2
+
+        effort_var = tk.StringVar(value=self.ai_config.harness_effort)
+        field_label(local_tab, "Review effort", row)
+        ttk.Combobox(
+            local_tab, values=list(ai.EFFORT_LEVELS), textvariable=effort_var,
+            state="readonly",
+        ).grid(row=row, column=1, sticky="ew", pady=(0, 2))
+        row += 1
+        tk.Label(
+            local_tab,
+            text="low is the cheap default; high/max spend more tokens for deeper reasoning.",
+            bg=BG, fg=FAINT, font=("Segoe UI", 8), anchor="w",
+        ).grid(row=row, column=1, sticky="w", pady=(0, 8))
+        row += 1
+
+        row = section(local_tab, "CLAUDE CODE (LOCAL CLI)", row)
+        claude_var = tk.StringVar(value=self.ai_config.claude_command)
+        field_label(local_tab, "claude launcher", row)
+        claude_row = tk.Frame(local_tab, bg=BG)
+        claude_row.grid(row=row, column=1, sticky="ew", pady=(0, 4))
+        claude_row.grid_columnconfigure(0, weight=1)
+        tk.Entry(
+            claude_row, textvariable=claude_var, bg=SURFACE, fg=INK,
+            relief="flat", highlightthickness=1, highlightbackground=BORDER,
+            highlightcolor=TEAL, font=FONT_UI,
+        ).grid(row=0, column=0, sticky="ew", ipady=4)
+        claude_status = tk.Label(
+            local_tab, text="", bg=BG, fg=FAINT, font=("Segoe UI", 8),
+            anchor="w", justify="left", wraplength=560,
+        )
+        claude_status.grid(row=row + 1, column=1, sticky="w", pady=(0, 6))
+
+        def detect_claude(auto: bool = False) -> None:
+            current = claude_var.get().strip()
+            found = ai.find_claude_command("" if auto else current)
+            if found:
+                if auto or not current:
+                    claude_var.set(found)
+                claude_status.configure(text="Found: " + found, fg=TEAL)
+            else:
+                claude_status.configure(
+                    text="Not found. Install Claude Code or set CLAUDE_CODE_COMMAND.",
+                    fg=BRICK,
+                )
+
+        ttk.Button(
+            claude_row, text="Auto-detect", style="Ghost.TButton",
+            command=lambda: detect_claude(True),
+        ).grid(row=0, column=1, padx=(8, 0))
+        row += 2
+
+        claude_model_var = tk.StringVar(value=self.ai_config.claude_model)
+        row = labeled_entry(
+            local_tab, "Model (optional)", claude_model_var, row
+        )
+        tk.Label(
+            local_tab,
+            text="Leave blank to use the model Claude Code is signed in to.",
+            bg=BG, fg=FAINT, font=("Segoe UI", 8), anchor="w",
+        ).grid(row=row, column=1, sticky="w", pady=(0, 8))
+        row += 1
+
+        # ---- Gemini -----------------------------------------------------
+        row = 0
+        row = section(gemini_tab, "GOOGLE GEMINI (FREE TIER)", row)
+        gemini_base_var = tk.StringVar(value=self.ai_config.gemini_api_base)
+        gemini_model_var = tk.StringVar(value=self.ai_config.gemini_model)
+        gemini_key_env_var = tk.StringVar(
+            value=self.ai_config.gemini_api_key_env
+        )
+        gemini_key_var = tk.StringVar(value=self.ai_config.gemini_api_key)
+        row = labeled_entry(gemini_tab, "Base URL", gemini_base_var, row)
+        row = labeled_entry(gemini_tab, "Model", gemini_model_var, row)
+        row = labeled_entry(gemini_tab, "Key env var", gemini_key_env_var, row)
+        row = labeled_entry(gemini_tab, "API key", gemini_key_var, row, show="*")
+        gemini_note = tk.Label(
+            gemini_tab,
+            text="The free tier uses the Gemini API. If a run says "
+                 "SERVICE_DISABLED, enable the API for the key's Google Cloud "
+                 "project, or create a free key at https://aistudio.google.com/apikey.",
+            bg="#f7edda", fg="#6d5528", font=("Segoe UI", 8), anchor="w",
+            justify="left", wraplength=600, padx=8, pady=6,
+        )
+        gemini_note.grid(row=row, column=0, columnspan=2, sticky="ew", pady=(4, 8))
+        row += 1
+
+        # ---- APIs -------------------------------------------------------
+        row = 0
+        row = section(api_tab, "OPENAI-COMPATIBLE (DEEPSEEK / OPENAI / OLLAMA)", row)
+        api_base_var = tk.StringVar(value=self.ai_config.api_base_url)
+        api_model_var = tk.StringVar(value=self.ai_config.api_model)
+        api_key_env_var = tk.StringVar(value=self.ai_config.api_key_env)
+        api_key_var = tk.StringVar(value=self.ai_config.api_key)
+        row = labeled_entry(api_tab, "Base URL", api_base_var, row)
+        row = labeled_entry(api_tab, "Model", api_model_var, row)
+        row = labeled_entry(api_tab, "Key env var", api_key_env_var, row)
+        row = labeled_entry(api_tab, "API key", api_key_var, row, show="*")
+
+        row = section(api_tab, "ANTHROPIC CLAUDE API", row)
+        anthropic_base_var = tk.StringVar(value=self.ai_config.anthropic_api_base)
+        anthropic_model_var = tk.StringVar(value=self.ai_config.anthropic_model)
+        anthropic_key_env_var = tk.StringVar(
+            value=self.ai_config.anthropic_api_key_env
+        )
+        anthropic_key_var = tk.StringVar(value=self.ai_config.anthropic_api_key)
+        row = labeled_entry(api_tab, "Base URL", anthropic_base_var, row)
+        row = labeled_entry(api_tab, "Model", anthropic_model_var, row)
+        row = labeled_entry(api_tab, "Key env var", anthropic_key_env_var, row)
+        row = labeled_entry(api_tab, "API key", anthropic_key_var, row, show="*")
+        tk.Label(
+            api_tab,
+            text="Leave a key blank to read its environment variable. A typed "
+                 "key is stored in settings.json in plain text.",
+            bg=BG, fg=FAINT, font=("Segoe UI", 8), anchor="w", justify="left",
+            wraplength=620,
+        ).grid(row=row, column=1, sticky="w", pady=(0, 8))
+        row += 1
+
+        timeout_var = tk.StringVar(value=str(self.ai_config.timeout_seconds))
+        row = labeled_entry(api_tab, "Timeout (seconds)", timeout_var, row)
+
+        note = tk.Label(
+            body,
+            text="Privacy: a local CLI runs on this computer, but the model "
+                 "provider it uses still receives the scenarios and authority "
+                 "text. API modes send the same material to the endpoint above.",
+            bg="#f7edda", fg="#6d5528", font=("Segoe UI", 8), anchor="w",
+            justify="left", wraplength=720, padx=10, pady=8,
+        )
+        note.grid(row=4, column=0, sticky="ew", pady=(4, 4))
+
+        def save() -> None:
+            mode = next(
+                (key for key, label in ai.MODE_LABELS.items() if label == mode_var.get()),
+                "off",
+            )
+            try:
+                timeout = int(timeout_var.get())
+            except ValueError:
+                timeout = ai.DEFAULT_TIMEOUT
+            config = ai.AIConfig.from_mapping(
+                {
+                    "mode": mode,
+                    "harness_command": harness_var.get().strip(),
+                    "harness_effort": effort_var.get().strip(),
+                    "claude_command": claude_var.get().strip(),
+                    "claude_model": claude_model_var.get().strip(),
+                    "api_base_url": api_base_var.get().strip(),
+                    "api_model": api_model_var.get().strip(),
+                    "api_key_env": api_key_env_var.get().strip(),
+                    "api_key": api_key_var.get(),
+                    "gemini_api_base": gemini_base_var.get().strip(),
+                    "gemini_model": gemini_model_var.get().strip(),
+                    "gemini_api_key_env": gemini_key_env_var.get().strip(),
+                    "gemini_api_key": gemini_key_var.get(),
+                    "anthropic_api_base": anthropic_base_var.get().strip(),
+                    "anthropic_model": anthropic_model_var.get().strip(),
+                    "anthropic_api_key_env": anthropic_key_env_var.get().strip(),
+                    "anthropic_api_key": anthropic_key_var.get(),
+                    "timeout_seconds": timeout,
+                    "max_authorities": self.ai_config.max_authorities,
+                    "authority_chars": self.ai_config.authority_chars,
+                }
+            )
+            settings = storage.read_settings()
+            settings["ai_review"] = ai.config_to_settings(config)
+            storage.write_settings(settings)
+            self.ai_config = config
+            if self.comparison:
+                self.ai_packet = ai.build_packet(
+                    self.comparison, config, library_meta=self.library.meta
+                )
+                self._render_ai_idle(self.comparison)
+            else:
+                self._render_ai_empty()
+            dialog.destroy()
+            self._flash_status("AI review settings saved")
+
+        buttons = tk.Frame(dialog, bg=BG)
+        buttons.pack(fill="x", padx=20, pady=(0, 14))
+        ttk.Button(buttons, text="Cancel", style="Ghost.TButton", command=dialog.destroy).pack(
+            side="right"
+        )
+        ttk.Button(buttons, text="Save settings", style="Accent.TButton", command=save).pack(
+            side="right", padx=(0, 8)
+        )
+        detect_harness()
+        detect_claude()
+
+    def _show_ai_help(self) -> None:
+        messagebox.showinfo(
+            "How AI review works",
+            "AI review is optional; once configured it runs only when you ask.\n\n"
+            "It sends both scenarios and the retrieved authority text to the "
+            "provider you choose:\n"
+            "• Google Gemini API (free tier) uses a Gemini key and defaults to "
+            "gemini-3.5-flash. If the run says SERVICE_DISABLED, enable the "
+            "Gemini API for the key's Cloud project or use a free AI Studio key.\n"
+            "• DeepSeek Harness (local account) runs the installed headless "
+            "agent. If you are signed in to the harness, it reuses that account "
+            "through a small overlay; otherwise it needs DEEPSEEK_API_KEY. This "
+            "is the default and uses the free local account.\n"
+            "• Claude Code runs the installed `claude` CLI in print mode. It "
+            "reuses whatever account Claude Code is signed in to.\n"
+            "• OpenAI-compatible API calls the endpoint, model, and key in "
+            "settings (DeepSeek, OpenAI, Ollama, LM Studio, or a gateway).\n"
+            "• Anthropic Claude API calls the Messages API with an Anthropic key.\n"
+            "• Manual: Copy AI prompt, paste it into any chat, then Import AI "
+            "response with the JSON answer.\n\n"
+            "The answer is checked before display: a citation that is not one of "
+            "the comparison's authorities is flagged, and the review is labelled "
+            "as AI-generated. It can still be wrong or miss a relevant section. "
+            "It is not legal advice; verify the official text.\n\n"
+            "Local search and comparison never make a network call.",
+            parent=self.root,
+        )
 
     def _render_authority_empty(self) -> None:
         for child in self.auth_container.winfo_children():
@@ -1550,11 +2621,12 @@ class TrecApp:
     def _render_comparison_empty(self) -> None:
         self.compare_count.configure(text="No comparison yet")
         self.compare_status.configure(
-            text="Scenario comparison uses local keyword and issue-lens retrieval — no network call."
+            text="Local retrieval. AI review is optional and runs only when you ask."
         )
         self.compare_tree.delete(*self.compare_tree.get_children())
         self._render_brief_empty()
         self._render_authority_empty()
+        self._render_ai_empty()
 
     def _render_brief_empty(self) -> None:
         self.brief_text.configure(state="normal")
@@ -1588,6 +2660,8 @@ class TrecApp:
         self.run_comparison()
 
     def _clear_scenarios(self) -> None:
+        if self.ai_cancel is not None:
+            self.ai_cancel.set()
         self.scenario_a.set_value("")
         self.scenario_b.set_value("")
         self._update_scenario_counts()
@@ -1603,6 +2677,8 @@ class TrecApp:
         self._update_scenario_counts()
 
     def run_comparison(self) -> None:
+        if self.ai_cancel is not None:
+            self.ai_cancel.set()
         self._update_scenario_counts()
         a = self.scenario_a.value().strip()
         b = self.scenario_b.value().strip()
@@ -1639,9 +2715,14 @@ class TrecApp:
             text=f"{len(report.shared)} shared · {len(report.only_a)} A-only · {len(report.only_b)} B-only"
         )
         self.compare_status.configure(
-            text=f"A: {len(report.a.matches)} authorities  ·  B: {len(report.b.matches)} authorities  ·  local analysis"
+            text=f"A: {len(report.a.matches)} authorities  ·  B: {len(report.b.matches)} authorities  ·  local analysis  ·  AI optional"
+        )
+        self.ai_analysis = None
+        self.ai_packet = ai.build_packet(
+            report, self.ai_config, library_meta=self.library.meta
         )
         self._build_brief(report)
+        self._render_ai_idle(report)
         self.compare_notebook.select(self.brief_tab)
         self._render_authority_empty()
         self.root.after_idle(self._set_compare_sash)
@@ -2039,7 +3120,10 @@ class TrecApp:
         )
         if not path:
             return
-        Path(path).write_text(getattr(self, "brief_markdown", self.brief_plain), encoding="utf-8")
+        markdown = getattr(self, "brief_markdown", self.brief_plain)
+        if self.ai_analysis is not None:
+            markdown = markdown.rstrip() + "\n\n" + self.ai_analysis.to_markdown()
+        Path(path).write_text(markdown, encoding="utf-8")
         self._flash_status("Comparison brief exported")
 
     def _show_compare_help(self) -> None:
@@ -2050,7 +3134,9 @@ class TrecApp:
             "each fact pattern using local keyword ranking, issue vocabulary, and "
             "short issue lenses.\n"
             "3. The brief reports shared issues, unique issues, authorities, and "
-            "requirement-style sentences to verify.\n\n"
+            "requirement-style sentences to verify.\n"
+            "4. The AI review tab is an optional second opinion. It is off by "
+            "default; use Settings or copy the prompt for any AI chat.\n\n"
             "Scores are relative to the best match in that scenario, not a probability "
             "or a legal conclusion. Read the full text and verify the official source.",
             parent=self.root,

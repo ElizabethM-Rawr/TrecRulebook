@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TREC Rulebook — Search Texas Real Estate Commission Rules</title>
-  <meta name="description" content="Free Windows app to search 515 Texas Real Estate Commission rules and statutes, compare scenarios, copy citations, and open official sources.">
+  <meta name="description" content="Free Windows app to search 515 Texas Real Estate Commission rules and statutes, compare scenarios, and get an optional AI red-flag review with citation checks.">
   <meta name="keywords" content="TREC rules, Texas Real Estate Commission rules, Texas real estate laws, TRELA, TREC rule search, Texas real estate inspector rules, TREC timeshare rules, Texas real estate license law">
   <meta name="author" content="ElizabethM-Rawr">
   <meta name="robots" content="index, follow, max-image-preview:large">
@@ -17,7 +17,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="TREC Rulebook">
   <meta property="og:title" content="TREC Rulebook — Search Texas Real Estate Commission Rules &amp; Laws">
-  <meta property="og:description" content="Search 515 TREC rules and Texas statutes, compare scenarios, and cite official text. Free Windows desktop app; works offline.">
+  <meta property="og:description" content="Search 515 TREC rules and Texas statutes, compare scenarios, and get an optional AI red-flag review. Free Windows desktop app; local search works offline.">
   <meta property="og:url" content="https://elizabethm-rawr.github.io/TrecRulebook/">
   <meta property="og:image" content="https://elizabethm-rawr.github.io/TrecRulebook/social-card.png">
   <meta property="og:image:alt" content="TREC Rulebook — searchable Texas Real Estate Commission rules and laws">
@@ -268,12 +268,13 @@
     "applicationCategory": "BusinessApplication",
     "applicationSubCategory": "Legal research",
     "operatingSystem": "Windows 10, Windows 11",
-    "softwareVersion": "1.1.0",
+    "softwareVersion": "1.4.0",
     "datePublished": "2026-11-06",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "featureList": [
       "Full-text search across TREC rules and Texas statutes",
       "Side-by-side scenario comparison",
+      "Optional AI red-flag review with citation checks",
       "Copy-ready legal citations",
       "Official source links",
       "Bookmarks and local notes",
@@ -304,7 +305,7 @@
       {
         "@type": "Question",
         "name": "Can I compare two scenarios?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Paste two fact patterns into the Compare Scenarios tab. The app retrieves the authorities each scenario raises, shows shared and unique issues, and produces a brief with citations and requirement-style sentences to verify." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Paste two fact patterns into the Compare Scenarios tab. The app retrieves the authorities each scenario raises, shows shared and unique issues, and produces a brief with citations and requirement-style sentences to verify. An optional AI review adds red flags and the facts that would change the analysis." }
       },
       {
         "@type": "Question",
@@ -314,7 +315,12 @@
       {
         "@type": "Question",
         "name": "Does TREC Rulebook work offline?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Yes. The rules and statutes are bundled with the app. Search, comparison, bookmarks, and notes work without a network connection. Official source links open in your browser when you choose them." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes for search, comparison, bookmarks, and notes; the rules and statutes are bundled. AI review is optional; it defaults to the Gemini free tier when a key is configured and runs only when you ask. When used, the scenarios and retrieved authority text go to the provider you configured. Manual copy-and-paste never contacts a provider from the app." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the app use AI?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Only if you turn on AI review. The default comparison is deterministic local retrieval. The optional AI layer asks a model to read the same two scenarios and authorities and return severity-ranked red flags, key differences, and missing facts. Citations that are not in the comparison are flagged, and the output is labelled as AI-generated. It is not legal advice." }
       },
       {
         "@type": "Question",
@@ -408,7 +414,7 @@
           <article class="card">
             <div class="icon" aria-hidden="true">↔</div>
             <h3>Compare two fact patterns</h3>
-            <p>Paste Scenario A and Scenario B. The app shows shared issues, unique issues, the authorities each one raises, and requirement-style sentences worth checking.</p>
+            <p>Paste Scenario A and Scenario B. The app shows shared issues, unique issues, the authorities each one raises, and requirement-style sentences worth checking. An optional AI review adds severity-ranked red flags.</p>
           </article>
           <article class="card">
             <div class="icon" aria-hidden="true">↗</div>
@@ -458,8 +464,17 @@
             <li>Recognized issue lenses for advertising, trust funds, inspections, conflicts, and more</li>
             <li>Shared and unique authorities, with relative match scores</li>
             <li>Requirement-style sentences to verify against the official text</li>
-            <li>Export the brief as Markdown</li>
+            <li>Optional AI review: severity-ranked red flags, key differences, missing facts, and a citation check</li>
+            <li>Export the brief or the AI review as Markdown</li>
           </ul>
+          <p class="fine">
+            AI review defaults to the Gemini free tier when a key is configured,
+            then to the free local account. It can also use DeepSeek Harness,
+            Claude Code, an OpenAI-compatible API, or the Anthropic Claude API
+            with your key, or a copy-and-paste prompt in any chat. It is a
+            second opinion, not a legal conclusion; unrecognized citations are
+            flagged.
+          </p>
         </div>
         <div class="visual">
           <img src="compare.png" width="1336" height="919" loading="lazy" alt="TREC Rulebook scenario comparison brief showing shared and unique authorities for two fact patterns">
@@ -494,7 +509,7 @@
       <div class="wrap">
         <div class="section-head">
           <h2>From question to citation in three steps</h2>
-          <p>No account, no setup wizard, no cloud upload.</p>
+          <p>No account, no setup wizard. Local search stays on your computer; AI review is opt-in.</p>
         </div>
         <div class="steps">
           <article class="step">
@@ -529,7 +544,7 @@
         </details>
         <details>
           <summary>Can I compare two scenarios?</summary>
-          <p>Yes. Paste two fact patterns into the Compare Scenarios tab. The app retrieves the authorities each scenario raises, shows shared and unique issues, and produces a brief with citations and requirement-style sentences to verify.</p>
+          <p>Yes. Paste two fact patterns into the Compare Scenarios tab. The app retrieves the authorities each scenario raises, shows shared and unique issues, and produces a brief with citations and requirement-style sentences to verify. An optional AI review adds red flags and the facts that would change the analysis.</p>
         </details>
         <details>
           <summary>Is TREC Rulebook free?</summary>
@@ -537,7 +552,11 @@
         </details>
         <details>
           <summary>Does it work offline?</summary>
-          <p>Yes. The rules and statutes are bundled with the app. Search, comparison, bookmarks, and notes work without a network connection. Official source links open in your browser when you choose them.</p>
+          <p>Yes for search, comparison, bookmarks, and notes; the rules and statutes are bundled. AI review defaults to the Gemini free tier when a key is configured (otherwise the free local account); it never runs until you ask. When you run it, the scenarios and retrieved authority text go to the provider you configured (Gemini, DeepSeek Harness, Claude Code, or an API endpoint). Manual copy-and-paste never contacts a provider from the app.</p>
+        </details>
+        <details>
+          <summary>Does the app use AI?</summary>
+          <p>Only if you turn on AI review. The default comparison is deterministic local retrieval. The optional AI layer asks a model to read the same two scenarios and authorities and return severity-ranked red flags, key differences, and missing facts. Citations that are not in the comparison are flagged, and the output is labelled as AI-generated. It is not legal advice.</p>
         </details>
         <details>
           <summary>How do I update the rules when TREC changes them?</summary>
@@ -560,7 +579,7 @@
           <div>
             <h2>Download TREC Rulebook</h2>
             <p>Free for Windows 10 and 11. The portable ZIP is recommended; the single EXE is the smallest download.</p>
-            <p class="fine">No installer · No account · Library included · v1.1.0</p>
+            <p class="fine">No installer · No account · Library included · v1.4.0</p>
           </div>
           <div class="cta-row">
             <a class="button button-primary" href="https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest">
