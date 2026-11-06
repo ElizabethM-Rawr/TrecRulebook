@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+import threading
 import webbrowser
 from datetime import datetime
 from pathlib import Path
@@ -13,6 +14,7 @@ from tkinter import filedialog, messagebox, ttk
 import tkinter as tk
 from tkinter import font as tkfont
 
+from . import __version__, storage, updates
 from .engine import (
     ComparisonReport,
     ComparisonRow,
@@ -267,11 +269,13 @@ class BookmarkStore:
 # ---------------------------------------------------------------------------
 
 class TrecApp:
-    def __init__(self, root: tk.Tk, data_path: Path):
+    def __init__(self, root: tk.Tk, data_path: Path, *, auto_update: bool = True):
         self.root = root
         self.data_path = data_path
         self.library = Library(data_path)
         self.bookmarks = BookmarkStore(_bookmark_path(data_path))
+        self.auto_update = auto_update
+        self._update_thread: threading.Thread | None = None
 
         self.current_section: Section | None = None
         self.current_query = ""
@@ -291,6 +295,8 @@ class TrecApp:
         self._show_search_empty()
         self._refresh_results(initial=True)
         self._refresh_saved()
+        if self.auto_update:
+            self.root.after(1200, self._maybe_check_updates)
 
     # -- window / styles -----------------------------------------------------
     def _configure_root(self) -> None:
@@ -454,6 +460,21 @@ class TrecApp:
         edit_menu.add_command(label="Copy section text", command=self.copy_section)
         menubar.add_cascade(label="Edit", menu=edit_menu)
 
+        tools_menu = tk.Menu(menubar, tearoff=False, font=FONT_UI)
+        tools_menu.add_command(
+            label="Check for rule updates now",
+            command=lambda: self._start_update_check(force=True),
+        )
+        tools_menu.add_command(
+            label="Open user library folder",
+            command=self._open_library_folder,
+        )
+        tools_menu.add_command(
+            label="Reload updated library",
+            command=self._reload_library,
+        )
+        menubar.add_cascade(label="Tools", menu=tools_menu)
+
         help_menu = tk.Menu(menubar, tearoff=False, font=FONT_UI)
         help_menu.add_command(label="Quick start", command=self.show_help)
         help_menu.add_command(label="Official sources", command=self.open_official_sources)
@@ -494,12 +515,13 @@ class TrecApp:
 
         snapshot = tk.Frame(right, bg=NAVY_DARK, highlightbackground="#2d5c66", highlightthickness=1)
         snapshot.pack(side="left", padx=(0, 14))
-        tk.Label(
+        self.snapshot_label = tk.Label(
             snapshot,
             text=f"LIBRARY  ·  {self.library.meta.get('generated_at_display', 'current')}",
             bg=NAVY_DARK, fg="#d8e4e3", font=("Segoe UI", 8, "bold"),
             padx=10, pady=6,
-        ).pack()
+        )
+        self.snapshot_label.pack()
 
         sources = tk.Label(
             right, text="Official sources ↗", bg=NAVY, fg="#e5d19a",
@@ -540,9 +562,13 @@ class TrecApp:
         counts = self.library.meta.get("counts", {})
         rules = counts.get("trec-rules", 0)
         statutes = sum(v for k, v in counts.items() if k != "trec-rules")
+        self._status_base_text = (
+            f"{len(self.library.sections)} sections  ·  {rules} TREC rules  ·  "
+            f"{statutes} statutory sections"
+        )
         self.status_left = tk.Label(
             bar,
-            text=f"{len(self.library.sections)} sections  ·  {rules} TREC rules  ·  {statutes} statutory sections",
+            text=self._status_base_text,
             bg="#e9e3d5", fg=MUTED, font=("Segoe UI", 8), anchor="w",
         )
         self.status_left.pack(side="left", padx=18)
@@ -949,10 +975,16 @@ class TrecApp:
     def _show_section(self, section: Section, query: str = "") -> None:
         self.current_section = section
         self.detail_view.tkraise()
+        if section.kind == "Rule":
+            badge_text, badge_bg, badge_fg = "TREC RULE", CHIP, CHIP_TEXT
+        elif section.source_id == "oc53":
+            badge_text, badge_bg, badge_fg = "RELATED STATUTE", "#f1e4e0", "#7c3f2f"
+        else:
+            badge_text, badge_bg, badge_fg = "TEXAS STATUTE", "#f3e6d1", "#7c541f"
         self.kind_badge.configure(
-            text="TREC RULE" if section.kind == "Rule" else "TEXAS STATUTE",
-            bg=CHIP if section.kind == "Rule" else "#f3e6d1",
-            fg=CHIP_TEXT if section.kind == "Rule" else "#7c541f",
+            text=badge_text,
+            bg=badge_bg,
+            fg=badge_fg,
         )
         chapter = section.chapter
         if section.kind == "Rule" and chapter:
@@ -987,6 +1019,15 @@ class TrecApp:
         self.detail_text.insert("end", "\n\n")
         self.detail_text.insert("end", "Official source: " + section.url, "source_link")
         self.detail_text.insert("end", "\n")
+        related = self.library.related_sections(section.uid)[:6]
+        if related:
+            self.detail_text.insert("end", "\nCross-referenced authorities (check context):\n", "source_link")
+            for item in related:
+                self.detail_text.insert(
+                    "end",
+                    f"  {item.citation_short} — {item.title}\n",
+                    "source_link",
+                )
         self.detail_text.configure(state="disabled")
         self.detail_text.yview_moveto(0)
 
@@ -1055,9 +1096,184 @@ class TrecApp:
                 self.result_tree.item(self.current_section.uid, values=values)
 
     def _flash_status(self, text: str) -> None:
-        original = self.status_left.cget("text")
         self.status_left.configure(text=text, fg=TEAL)
-        self.root.after(2200, lambda: self.status_left.configure(text=original, fg=MUTED))
+        self.root.after(
+            2200,
+            lambda: self.status_left.configure(
+                text=self._status_base_text, fg=MUTED
+            ),
+        )
+
+    # -- source updates ------------------------------------------------------
+    def _maybe_check_updates(self) -> None:
+        if updates.is_due():
+            self._start_update_check()
+
+    def _start_update_check(self, *, force: bool = False) -> None:
+        if self._update_thread and self._update_thread.is_alive():
+            self._flash_status("An update check is already running")
+            return
+        if not force and not updates.is_due():
+            return
+        self._set_status("Checking for newer rule and statute text…", TEAL)
+        self._update_thread = threading.Thread(
+            target=self._update_worker,
+            kwargs={"force": force},
+            daemon=True,
+        )
+        self._update_thread.start()
+
+    def _update_worker(self, *, force: bool) -> None:
+        try:
+            payload, changed = updates.fetch_update(
+                self.library.meta,
+                progress=lambda message: self._thread_status(message),
+            )
+            if changed and payload is not None:
+                target = updates.stage_payload(payload)
+                updates.mark_checked(result="updated")
+                self._schedule_update_callback(
+                    lambda: self._update_finished("updated", target, None, force)
+                )
+            else:
+                updates.mark_checked(result="current")
+                self._schedule_update_callback(
+                    lambda: self._update_finished("current", None, None, force)
+                )
+        except Exception as exc:  # network, parse, or local write failure
+            try:
+                updates.mark_error(str(exc))
+            except OSError:
+                pass
+            self._schedule_update_callback(
+                lambda: self._update_finished("error", None, str(exc), force)
+            )
+
+    def _schedule_update_callback(self, callback) -> None:
+        try:
+            self.root.after(0, callback)
+        except (tk.TclError, RuntimeError):
+            pass
+
+    def _thread_status(self, message: str) -> None:
+        try:
+            self.root.after(0, lambda: self._set_status(message, TEAL))
+        except tk.TclError:
+            pass
+
+    def _set_status(self, text: str, color: str = TEAL) -> None:
+        try:
+            if not self.status_left.winfo_exists():
+                return
+            self.status_left.configure(text=text, fg=color)
+        except tk.TclError:
+            pass
+
+    def _update_finished(
+        self,
+        result: str,
+        target: Path | None,
+        error: str | None,
+        force: bool,
+    ) -> None:
+        try:
+            if not self.root.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        self._update_thread = None
+        if result == "updated":
+            self._set_status(
+                "Updated library downloaded — use Tools → Reload updated library",
+                TEAL,
+            )
+            if force:
+                messagebox.showinfo(
+                    "Library updated",
+                    "A newer version of the public rules or statutes was "
+                    "downloaded.\n\n"
+                    "Use Tools → Reload updated library to apply it now, or "
+                    "it will be used automatically next time you start the app.",
+                    parent=self.root,
+                )
+        elif result == "current":
+            self._set_status("Library is current · checked just now", MUTED)
+            self.root.after(
+                5000,
+                lambda: self._set_status(self._status_base_text, MUTED),
+            )
+        else:
+            self._set_status("Update check unavailable — using the local library", BRICK)
+            if force:
+                messagebox.showwarning(
+                    "Could not check for updates",
+                    "The app could not download or parse the latest sources.\n\n"
+                    f"{error}\n\n"
+                    "Your current library is unchanged.",
+                    parent=self.root,
+                )
+            else:
+                self.root.after(
+                    5000,
+                    lambda: self._set_status(self._status_base_text, MUTED),
+                )
+
+    def _open_library_folder(self) -> None:
+        folder = storage.app_data_dir()
+        folder.mkdir(parents=True, exist_ok=True)
+        webbrowser.open(folder.as_uri())
+
+    def _reload_library(self) -> None:
+        target = storage.user_library_path()
+        if not target.exists():
+            messagebox.showinfo(
+                "No downloaded update",
+                "No updated library has been downloaded yet. Use "
+                "Tools → Check for rule updates now.",
+                parent=self.root,
+            )
+            return
+        try:
+            new_library = Library(target)
+        except Exception as exc:
+            messagebox.showerror(
+                "Could not reload library",
+                f"The downloaded library could not be opened:\n{exc}",
+                parent=self.root,
+            )
+            return
+        self.library = new_library
+        self.data_path = target
+        self.chapters = self.library.chapters()
+        self.chapter_combo.configure(
+            values=("All chapters",)
+            + tuple(chapter.label for chapter in self.chapters)
+        )
+        self.chapter_var.set("All chapters")
+        self.chapter_by_label = {chapter.label: chapter.key for chapter in self.chapters}
+        self.snapshot_label.configure(
+            text=f"LIBRARY  ·  {self.library.meta.get('generated_at_display', 'current')}"
+        )
+        counts = self.library.meta.get("counts", {})
+        rules = counts.get("trec-rules", 0)
+        statutes = sum(v for k, v in counts.items() if k != "trec-rules")
+        self._status_base_text = (
+            f"{len(self.library.sections)} sections  ·  {rules} TREC rules  ·  "
+            f"{statutes} statutory sections"
+        )
+        self.status_left.configure(text=self._status_base_text, fg=MUTED)
+        self.current_section = None
+        self.current_query = ""
+        self.comparison = None
+        self.selected_row = None
+        self.search_entry.set_value("")
+        self._show_search_empty()
+        self._render_comparison_empty()
+        self._render_brief_empty()
+        self._render_authority_empty()
+        self._refresh_results(initial=True)
+        self._refresh_saved()
+        self._flash_status("Updated library loaded")
 
     def _refresh_results(self, initial: bool = False) -> None:
         self._run_search()
@@ -1679,6 +1895,57 @@ class TrecApp:
         self._add_brief_rows(add, md, "Only in A", report.only_a)
         self._add_brief_rows(add, md, "Only in B", report.only_b)
 
+        add("\nDEADLINES & TRIGGERS\n", "h2")
+        if report.deadlines:
+            add(
+                "Extracted time language. These are sentences to verify, not a "
+                "computed deadline. Confirm the triggering event and the counting rule.\n",
+                "muted",
+            )
+            md.append("## Deadlines & triggers")
+            md.append(
+                "*Extracted time language, not a computed deadline. Confirm the "
+                "triggering event and the counting rule.*"
+            )
+            md.append("")
+            for citation, sentence in report.deadlines:
+                add(f"{citation}  ", "cite")
+                add(sentence + "\n", "bullet")
+                md.append(f"- **{citation}** — {sentence}")
+        else:
+            add("No deadline-style sentences extracted from the retrieved authorities.\n", "body")
+            md.append("## Deadlines & triggers")
+            md.append("No deadline-style sentences extracted.")
+        md.append("")
+
+        add("\nPOSSIBLE CONSEQUENCES\n", "h2")
+        if report.penalties:
+            add(
+                "Extracted consequence language, grouped for review. This does "
+                "not decide which consequence applies to these facts.\n",
+                "muted",
+            )
+            md.append("## Possible consequences")
+            md.append(
+                "*Extracted consequence language, not a finding that a penalty applies.*"
+            )
+            md.append("")
+            for category, citation, sentence in report.penalties:
+                add(f"{category}  ·  {citation}\n", "cite")
+                add(sentence + "\n", "bullet")
+                md.append(f"- **{category}** · **{citation}** — {sentence}")
+        else:
+            add("No penalty or consequence sentences extracted from the retrieved authorities.\n", "body")
+            md.append("## Possible consequences")
+            md.append("No penalty or consequence sentences extracted.")
+        md.append("")
+
+        add("\nFACTS TO CONFIRM\n", "h2")
+        for fact in report.facts_to_confirm:
+            add("• " + fact + "\n", "bullet")
+            md.append(f"- {fact}")
+        md.append("")
+
         add("\nREQUIREMENTS WORTH CHECKING\n", "h2")
         if report.checklist:
             for citation, sentence in report.checklist:
@@ -1696,8 +1963,9 @@ class TrecApp:
 
         add("\n" + "─" * 72 + "\n", "divider")
         add(
-            "Research aid only — not legal advice. Verify the official text before acting. "
-            "Official links are available in each authority's detail view.\n",
+            "Research aid only — not legal advice. Deadlines and consequences are "
+            "extracted language, not legal conclusions. Verify the official text "
+            "before acting. Official links are available in each authority's detail view.\n",
             "warn",
         )
         md.extend(
@@ -2000,8 +2268,13 @@ class TrecApp:
             "to copy a citation, open the official source, or save it.\n\n"
             "COMPARE SCENARIOS\n"
             "Paste two fact patterns and choose Compare scenarios. The brief shows "
-            "shared and unique issues plus the authorities each one raises. Select "
-            "an authority to see why it matched each scenario.\n\n"
+            "shared and unique issues plus the authorities each one raises, extracted "
+            "deadline and consequence language, and facts to confirm. Select an "
+            "authority to see why it matched each scenario.\n\n"
+            "UPDATES\n"
+            "The app checks the public sources when online, at most once a day. "
+            "Use Tools to check now, open the downloaded-library folder, or reload "
+            "a staged update without restarting.\n\n"
             "SAVED\n"
             "Bookmarks and your notes are stored locally. Open one to jump back to "
             "the section.\n\n"
@@ -2020,14 +2293,15 @@ class TrecApp:
         statutes = sum(v for k, v in counts.items() if k != "trec-rules")
         messagebox.showinfo(
             "About this library",
-            f"TREC Rulebook\n\n"
+            f"TREC Rulebook v{__version__}\n\n"
             f"{len(self.library.sections)} sections: {rules} TREC rule sections and "
             f"{statutes} statutory sections.\n"
             f"Snapshot: {self.library.meta.get('generated_at_display', 'unknown')}\n"
             f"Data file: {self.data_path}\n\n"
-            "Sources: the TREC rules page and the statutes linked from TREC's "
-            "Rules and Laws page (Texas Occupations Code chapters 1101 and 1102; "
-            "Texas Property Code chapter 221).\n\n"
+            "Sources: the TREC rules page; Texas Occupations Code chapters 1101, "
+            "1102, 1105, and 53; and Texas Property Code chapter 221. Chapter 53 "
+            "is included as related licensing law.\n\n"
+            "The app can stage a newer library from the public sources when online.\n\n"
             + DISCLAIMER,
             parent=self.root,
         )

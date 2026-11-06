@@ -11,7 +11,7 @@ A free Windows desktop app for searching **Texas Real Estate Commission (TREC) r
 
 It gives you three things in one window:
 
-1. **Instant search** across 481 sections of TREC rules and Texas statutes, with citations, official links, and in-document highlighting.
+1. **Instant search** across 515 sections of TREC rules and Texas statutes, with citations, official links, and in-document highlighting.
 2. **Scenario comparison** — paste two fact patterns and get a brief showing shared issues, unique issues, the authorities each one raises, and requirement-style sentences to verify.
 3. **Saved authorities and notes** for building your own research set.
 
@@ -32,7 +32,7 @@ Get the newest build from **[GitHub Releases](https://github.com/ElizabethM-Rawr
 - **Portable ZIP** — recommended; unzip and run `TRECRulebook.exe`. No installer.
 - **Single EXE** — one file; Windows may show a SmartScreen warning for a new unsigned build.
 
-The app is free, requires no account, and includes the full 481-section library.
+The app is free, requires no account, and includes the full 515-section library.
 
 ## What is TREC Rulebook?
 
@@ -45,7 +45,7 @@ TREC Rulebook is a local research tool for Texas real estate professionals, insp
 - What does the Texas Timeshare Act require for registration, escrow, or cancellation?
 - Which rule or statute applies to a particular fact pattern?
 
-The search covers the TREC rules page (22 TAC chapters 531–543), the **Real Estate License Act** (Texas Occupations Code chapter 1101), the **Inspector Act** (chapter 1102), and the **Timeshare Act** (Texas Property Code chapter 221).
+The search covers the TREC rules page (22 TAC chapters 531–543), the **Real Estate License Act** (Texas Occupations Code chapter 1101), the **Inspector Act** (chapter 1102), TREC's **self-directed status** statute (chapter 1105), the **Timeshare Act** (Texas Property Code chapter 221), and **Occupations Code chapter 53** as related licensing law.
 
 ---
 
@@ -109,10 +109,12 @@ The build machine needs internet access the first time so PyInstaller can be ins
 | TREC Rules (22 TAC, chapters 531–543) | 205 |
 | Tex. Occ. Code ch. 1101 — Real Estate License Act (TRELA) | 164 |
 | Tex. Occ. Code ch. 1102 — Real Estate Inspectors | 50 |
+| Tex. Occ. Code ch. 1105 — TREC self-directed status | 12 |
 | Tex. Prop. Code ch. 221 — Timeshare Plans | 62 |
-| **Total** | **481** |
+| Tex. Occ. Code ch. 53 — Consequences of Criminal Conviction *(related licensing law)* | 22 |
+| **Total** | **515** |
 
-Snapshot in this copy: **November 05, 2026**.
+Snapshot in this copy: **November 05, 2026**. The four TREC statute chapters (1101, 1102, 1105, and Property Code 221) are included in full; chapter 53 is included as related licensing law because TREC’s Chapter 541 rules implement it.
 
 The data comes from:
 
@@ -120,7 +122,9 @@ The data comes from:
 - [TREC Rules and Laws](https://www.trec.texas.gov/rules-and-laws)
 - [Texas Occupations Code ch. 1101](https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1101.htm)
 - [Texas Occupations Code ch. 1102](https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1102.htm)
+- [Texas Occupations Code ch. 1105](https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm)
 - [Texas Property Code ch. 221](https://statutes.capitol.texas.gov/Docs/PR/htm/PR.221.htm)
+- [Texas Occupations Code ch. 53](https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm)
 
 The rules page is a courtesy copy. The official rule text is maintained by the Texas Secretary of State in the Texas Administrative Code.
 
@@ -138,7 +142,7 @@ The rules page is a courtesy copy. The official rule text is maintained by the T
 
 Keyboard: `Ctrl+F` search, `↓` move into results, `Enter` open, `Esc` clear.
 
-Search is SQLite **FTS5** with BM25 ranking and a light title/tag boost. All 481 sections are in an in-memory index, so results are immediate.
+Search is SQLite **FTS5** with BM25 ranking and a light title/tag boost. All 515 sections are in an in-memory index, so results are immediate.
 
 ### Compare Scenarios
 
@@ -149,11 +153,16 @@ Paste a fact pattern into each box and choose **Compare scenarios**. The app ret
 - shared issues and authorities;
 - A-only and B-only authorities;
 - requirement-style sentences to verify;
+- extracted **deadline and periodic-trigger** sentences;
+- extracted **possible consequences**, grouped as license status, administrative penalty, criminal, civil, recovery fund, or other;
+- **facts to confirm** before applying a rule;
 - citations and relative match scores.
 
 Scores are **relative to the best match in that scenario**, not probabilities and not legal conclusions. A lower-scored section can still be important; read the text.
 
-The comparison is deterministic, local retrieval. It does not understand every fact pattern the way a lawyer would. Treat the brief as a starting index, not an answer.
+The comparison is deterministic, local retrieval. It uses concept vocabulary, everyday-word synonyms, and a citation graph that lifts sections cross-referenced by highly ranked authorities. It still does not understand every fact pattern the way a lawyer would. Treat the brief as a starting index, not an answer.
+
+The deadline and consequence sections **extract language, not legal conclusions**. They do not decide which deadline, right, or penalty applies. Confirm the triggering event, counting rule, and operative facts against the official text.
 
 ### Saved
 
@@ -167,15 +176,21 @@ Bookmarks and notes are stored locally:
 
 ## Refreshing the library
 
-When TREC or the Legislature updates a source:
+The app checks the public sources in the background on startup, at most once every 24 hours, when a network connection is available. If the text changed, it downloads and parses the new version into:
+
+```text
+%APPDATA%\TRECRulesExplorer\trec_library.json
+```
+
+Use **Tools → Reload updated library** to apply it immediately; otherwise the updated library is used on the next start. **Tools → Check for rule updates now** forces a check. The bundled library is never overwritten.
+
+For a source build or a manual refresh:
 
 ```powershell
 python tools/build_library.py
 ```
 
-The builder uses only the Python standard library, respects the public pages, and writes `data/trec_library.json`. The app reads that file at startup.
-
-It refuses to write a library with fewer than 150 rule sections, so a failed/blocked download cannot silently replace a good snapshot.
+The builder uses only the Python standard library, respects the public pages, and writes `data/trec_library.json`. It refuses to write a library with fewer than 150 rule sections, so a failed or blocked download cannot silently replace a good snapshot.
 
 ---
 
@@ -186,7 +201,7 @@ python -m unittest discover -s tests -v
 python app.py --smoke-test
 ```
 
-The test suite checks source counts, citation search, phrase search, filters, scenario ranking, comparison grouping, and text helpers.
+The test suite checks source counts, citation search, phrase search, filters, scenario ranking, related-authority links, deadline/penalty extraction, comparison grouping, and text helpers.
 
 ---
 
@@ -200,12 +215,15 @@ trec_rules_explorer/
   build_exe.bat              # PyInstaller build script (one-file by default)
   requirements.txt           # intentionally no third-party packages
   data/
-    trec_library.json        # bundled snapshot (481 sections)
+    trec_library.json        # bundled snapshot (515 sections)
   trec_explorer/
     __init__.py
     engine.py                # load, FTS5 search, scenario retrieval/compare
-    lexicon.py               # issue vocabulary and issue lenses
+    ingest.py                # shared fetch/parse/build pipeline
+    lexicon.py               # issue vocabulary, synonyms, and issue lenses
+    storage.py               # app-data paths and atomic JSON writes
     ui.py                    # Tkinter interface, bookmarks, notes, export
+    updates.py               # 24-hour background source refresh
   tools/
     build_library.py         # fetch + parse + write the snapshot
     check_seo.py             # validate local landing-page metadata
@@ -241,7 +259,7 @@ TREC Rulebook is a free, local Windows app for searching the Texas Real Estate C
 
 ### Does it include Texas real estate laws, not just TREC rules?
 
-Yes. It includes the Real Estate License Act (Texas Occupations Code chapter 1101), the Inspector Act (chapter 1102), and the Timeshare Act (Texas Property Code chapter 221), in addition to 205 TREC rule sections.
+Yes. It includes the Real Estate License Act (Texas Occupations Code chapter 1101), the Inspector Act (chapter 1102), TREC's self-directed status statute (chapter 1105), and the Timeshare Act (Texas Property Code chapter 221). It also includes Occupations Code chapter 53 as related licensing law, in addition to 205 TREC rule sections.
 
 ### Can I compare two scenarios?
 
@@ -267,8 +285,8 @@ The library includes 22 TAC chapters 531 (Canons of Professional Ethics and Cond
 
 ## Limitations
 
-- Only the three statutes linked from TREC's Rules and Laws page are included. General statute chapters, case law, local ordinances, and agency guidance are outside this library.
-- The text is a snapshot. Rules and statutes change; refresh before relying on a citation.
-- Scenario retrieval is keyword/issue based. It can miss a relevant section or surface a tangential one.
-- The comparison does not decide rights, deadlines, or penalties. Always read the full section and confirm the official text.
-- This is not a substitute for a Texas real estate attorney or a TREC compliance professional.
+- **Statute scope.** The library includes TREC's four core statute chapters (Occupations Code 1101, 1102, and 1105; Property Code 221) and Occupations Code chapter 53 as related licensing law. It does not include unrelated Texas statutes, case law, local ordinances, attorney general opinions, or agency guidance outside the TREC rules pages.
+- **Freshness.** The app checks for changes at most once every 24 hours when online and stages a newer library in the user's app-data folder. A check requires a network connection; the parser can lag a very recent amendment; the official text always controls.
+- **Scenario retrieval.** Retrieval is local and deterministic. Synonyms, issue lenses, and the cross-reference graph improve recall, but the app can still miss a relevant section or surface a tangential one. It does not use a legal reasoning model.
+- **No legal conclusions.** The comparison extracts requirement, deadline, and consequence language and suggests facts to confirm. It does not decide rights, deadlines, penalties, or which rule controls. Read the full section and verify the official text.
+- **Not a substitute** for a Texas real estate attorney or a TREC compliance professional.

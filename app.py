@@ -5,8 +5,10 @@ Example:
     python app.py
     python app.py --data data/trec_library.json
 
-The application is offline after installation; it uses only Python's standard
-library plus Tkinter.
+The application works offline from a bundled library.  When a network
+connection is available it can check the public sources in the background and
+stage a newer library in the user's app-data folder.  Uses only Python's
+standard library plus Tkinter.
 """
 
 from __future__ import annotations
@@ -27,6 +29,7 @@ if getattr(sys, "frozen", False):
     ROOT = Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
 sys.path.insert(0, str(ROOT))
 
+from trec_explorer import storage  # noqa: E402
 from trec_explorer.ui import TrecApp  # noqa: E402
 
 
@@ -60,8 +63,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--data",
         type=Path,
-        default=ROOT / "data" / "trec_library.json",
-        help="Path to trec_library.json",
+        default=None,
+        help="Path to trec_library.json (defaults to newest bundled or updated library)",
+    )
+    parser.add_argument(
+        "--no-update-check",
+        action="store_true",
+        help="Skip the background check for newer public rule/statute text.",
     )
     parser.add_argument(
         "--smoke-test",
@@ -70,7 +78,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    data_path = args.data.expanduser().resolve()
+    bundled_path = (ROOT / "data" / "trec_library.json").resolve()
+    data_path = (
+        args.data.expanduser().resolve()
+        if args.data is not None
+        else storage.choose_library_path(bundled_path)
+    )
     if not data_path.exists():
         root = tk.Tk()
         root.withdraw()
@@ -88,7 +101,11 @@ def main(argv: list[str] | None = None) -> int:
     enable_dpi_awareness()
     root = tk.Tk()
     try:
-        TrecApp(root, data_path)
+        TrecApp(
+            root,
+            data_path,
+            auto_update=not args.no_update_check and not args.smoke_test,
+        )
     except Exception as exc:  # pragma: no cover - startup failure UI path
         _log_startup_error(exc)
         root.withdraw()

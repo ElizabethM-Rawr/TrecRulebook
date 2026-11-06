@@ -222,6 +222,40 @@ PHRASES = [
     "property management", "inspection report", "purchase contract",
 ]
 
+# Query-expansion hints for scenario retrieval.  These improve recall without
+# changing the user's search tab: a scenario that says "deposit" can also find
+# sections that use the statutory phrase "trust money".
+SYNONYMS: dict[str, tuple[str, ...]] = {
+    "ad": ("advertisement", "advertising"),
+    "ads": ("advertisement", "advertising"),
+    "advert": ("advertise", "advertisement", "advertising"),
+    "advertised": ("advertise", "advertisement", "advertising"),
+    "agent": ("sales agent", "license holder"),
+    "agents": ("sales agent", "license holder"),
+    "broker": ("license holder", "sponsor"),
+    "ce": ("continuing education",),
+    "commission": ("fee", "compensation"),
+    "deposit": ("trust money", "earnest money", "escrow"),
+    "deposits": ("trust money", "earnest money", "escrow"),
+    "dual": ("intermediary", "dual capacity"),
+    "earnest": ("trust money", "escrow"),
+    "hoa": ("homeowners association", "property owners association"),
+    "inspection": ("inspector", "standards of practice"),
+    "inspections": ("inspector", "standards of practice"),
+    "landlord": ("lease", "tenant", "property management"),
+    "paperwork": ("records", "retain", "written"),
+    "realtor": ("license holder", "sales agent", "broker"),
+    "referral": ("splitting fee", "unlicensed person"),
+    "referrals": ("splitting fee", "unlicensed person"),
+    "rental": ("lease", "tenant", "residential rental locator"),
+    "repair": ("repairs", "maintenance"),
+    "repairs": ("maintenance", "inspector"),
+    "retainer": ("trust money", "escrow"),
+    "sale": ("conveyance", "purchase contract"),
+    "sales": ("sales agent", "purchase contract"),
+    "team": ("team name", "assumed name"),
+}
+
 
 # Small, transparent issue lenses used to surface the short, decisive section
 # when a long standards-of-practice section would otherwise dominate keyword

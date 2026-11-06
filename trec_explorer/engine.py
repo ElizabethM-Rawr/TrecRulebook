@@ -15,6 +15,7 @@ from .lexicon import (
     ISSUE_LENSES,
     PHRASES,
     STOPWORDS,
+    SYNONYMS,
     matched_issue_lenses,
 )
 
@@ -24,6 +25,34 @@ CITATION_RE = re.compile(
 )
 CHAPTER_RE = re.compile(r"\bchapter\s+(\d{3,4})\b", re.I)
 SENTENCE_RE = re.compile(r"(?<=[.!?])\s+")
+TIME_RE = re.compile(
+    r"\b(?:within|not later than|no later than|before|after|by|at least)\s+"
+    r"(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|"
+    r"thirty|sixty|ninety)\s+(?:calendar\s+)?"
+    r"(?:days?|months?|years?|hours?)\b"
+    r"|\b(?:annual(?:ly)?|each year|renewal|every\s+\w+\s+years?)\b",
+    re.I,
+)
+PENALTY_CATEGORIES = (
+    ("Recovery fund", re.compile(r"\brecovery fund\b|\brecovery trust\b", re.I)),
+    ("Civil", re.compile(r"\bcivil penalty\b|\binjunction\b|\bcivil action\b", re.I)),
+    (
+        "License status",
+        re.compile(
+            r"\b(?:commission|board|director)\s+(?:may|shall)\s+"
+            r"(?:suspend|revoke|reprimand|probate)\b|"
+            r"\blicense\s+(?:may|shall|is)\s+(?:be\s+)?"
+            r"(?:suspended|revoked|probated|reprimanded)\b|"
+            r"\bsubject\s+to\s+(?:suspension|revocation|probation)\b",
+            re.I,
+        ),
+    ),
+    (
+        "Administrative penalty",
+        re.compile(r"\badministrative penalty\b|\bfine\b|\bpenalty\b", re.I),
+    ),
+    ("Criminal", re.compile(r"\b(?:misdemeanor|felony|criminal)\b", re.I)),
+)
 
 REQUIREMENT_CUES = (
     " must ", " shall ", " may not ", " is required ", " are required ",
@@ -138,6 +167,9 @@ class ComparisonReport:
     only_a_concepts: list[tuple[str, str]] = field(default_factory=list)
     only_b_concepts: list[tuple[str, str]] = field(default_factory=list)
     checklist: list[tuple[str, str]] = field(default_factory=list)
+    deadlines: list[tuple[str, str]] = field(default_factory=list)
+    penalties: list[tuple[str, str, str]] = field(default_factory=list)
+    facts_to_confirm: list[str] = field(default_factory=list)
     overview: str = ""
 
 
@@ -225,6 +257,67 @@ def find_chapter(value: str) -> str | None:
     return match.group(1) if match else None
 
 
+def _clean_sentence(value: str) -> str:
+    value = re.sub(r"\s+", " ", value).strip()
+    if value and value[0].islower():
+        value = value[0].upper() + value[1:]
+    if len(value) > 420:
+        value = value[:417].rsplit(" ", 1)[0] + "…"
+    return value
+
+
+def extract_deadlines(body: str, *, limit: int = 3) -> list[str]:
+    """Return sentences that contain a deadline or periodic trigger.
+
+    These are extracted words, not a computation of the legally correct
+    deadline.  The comparison brief labels them accordingly.
+    """
+    rows: list[str] = []
+    seen: set[str] = set()
+    for sentence in SENTENCE_RE.split(body):
+        sentence = _clean_sentence(sentence)
+        if len(sentence) < 30 or not TIME_RE.search(sentence):
+            continue
+        key = sentence[:90].lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append(sentence)
+        if len(rows) >= limit:
+            break
+    return rows
+
+
+def classify_penalty(sentence: str) -> str | None:
+    for label, pattern in PENALTY_CATEGORIES:
+        if pattern.search(sentence):
+            return label
+    return None
+
+
+def extract_penalties(
+    body: str, *, limit: int = 3
+) -> list[tuple[str, str]]:
+    """Return (category, sentence) pairs for consequence language."""
+    rows: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for sentence in SENTENCE_RE.split(body):
+        sentence = _clean_sentence(sentence)
+        if len(sentence) < 30:
+            continue
+        category = classify_penalty(sentence)
+        if not category:
+            continue
+        key = sentence[:90].lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append((category, sentence))
+        if len(rows) >= limit:
+            break
+    return rows
+
+
 def highlight_spans(text: str, query: str) -> list[tuple[int, int]]:
     """Find non-overlapping query terms for GUI highlighting."""
     terms: list[str] = []
@@ -294,6 +387,8 @@ class Library:
         ]
         self.by_uid = {section.uid: section for section in self.sections}
         self.by_section = {section.section: section for section in self.sections}
+        self._related: dict[str, tuple[str, ...]] = {}
+        self._build_related()
         self._lower_text = {
             section.uid: (
                 f"{section.citation} {section.title} {section.body} "
@@ -332,6 +427,33 @@ class Library:
             "INSERT INTO docs(uid, citation, title, body, tags) VALUES (?, ?, ?, ?, ?)",
             rows,
         )
+
+    def _build_related(self) -> None:
+        """Build a citation graph from section text.
+
+        This is deliberately conservative: only explicit section numbers that
+        resolve to a section in this library become edges.  It is used as a
+        recall aid, not as a claim that the cross-referenced section controls.
+        """
+        for section in self.sections:
+            related: list[str] = []
+            seen: set[str] = set()
+            for number in CITATION_RE.findall(section.body):
+                target = self.by_section.get(number)
+                if not target or target.uid == section.uid or target.uid in seen:
+                    continue
+                seen.add(target.uid)
+                related.append(target.uid)
+                if len(related) >= 24:
+                    break
+            self._related[section.uid] = tuple(related)
+
+    def related_sections(self, uid: str) -> list[Section]:
+        return [
+            self.by_uid[related_uid]
+            for related_uid in self._related.get(uid, ())
+            if related_uid in self.by_uid
+        ]
 
     # -- metadata / browsing -------------------------------------------------
     def chapters(self) -> list[ChapterOption]:
@@ -612,16 +734,30 @@ class Library:
         concept_keys = {key for key, _, _ in concepts[:5]}
 
         # Expand the query with the vocabulary of the concepts the scenario
-        # actually raises.  Original words remain in the query too.
+        # actually raises.  Original words remain in the query too.  A small
+        # synonym layer catches everyday words ("deposit") that the statute
+        # calls something else ("trust money").
         expansion: list[str] = []
+        synonym_phrases: list[str] = []
+        for term in raw_terms:
+            for synonym in SYNONYMS.get(term, ()):
+                if " " in synonym:
+                    synonym_phrases.append(synonym)
+                elif synonym not in expansion:
+                    expansion.append(synonym)
         for key, _, _ in concepts[:4]:
             for term in CONCEPTS[key]["terms"]:  # type: ignore[index]
                 term = str(term)
                 if term.lower() not in expansion:
                     expansion.append(term.lower())
-        expansion = expansion[:22]
-        all_terms = list(dict.fromkeys(raw_terms + expansion))[:40]
-        phrases = [phrase for phrase in PHRASES if phrase in text.lower()][:8]
+        expansion = expansion[:28]
+        all_terms = list(dict.fromkeys(raw_terms + expansion))[:48]
+        text_lower = text.lower()
+        phrases = [
+            phrase for phrase in PHRASES if phrase in text_lower
+        ]
+        phrases.extend(synonym_phrases)
+        phrases = list(dict.fromkeys(phrases))[:10]
         fts_query = self._build_match_query(all_terms, phrases)
         primary_query = self._build_match_query(raw_terms, phrases)
 
@@ -812,6 +948,67 @@ class Library:
                 ),
             )
         scored.sort(key=lambda item: (-item[1], item[0].citation_short))
+
+        # Two-pass recall boost: when a highly ranked section cites another
+        # section in the library, give that target a modest lift.  This is a
+        # navigation aid, not a claim that the cited section applies.
+        if len(scored) > 1 and self._related:
+            top = scored[:18]
+            top_uids = {item[0].uid for item in top}
+            known_uids = {item[0].uid for item in scored}
+            additions: list[
+                tuple[Section, float, tuple[str, ...], tuple[str, ...]]
+            ] = []
+            referenced_by: dict[str, tuple[str, float]] = {}
+            for source_section, source_score, _labels, _reasons in top:
+                for related_uid in self._related.get(source_section.uid, ()):
+                    if related_uid in top_uids:
+                        continue
+                    previous = referenced_by.get(related_uid)
+                    if previous is None or source_score > previous[1]:
+                        referenced_by[related_uid] = (
+                            source_section.citation_short,
+                            source_score,
+                        )
+                    if related_uid in known_uids or len(additions) >= 24:
+                        continue
+                    related_section = self.by_uid.get(related_uid)
+                    if not related_section or not self._scope_applies(
+                        related_section, concept_keys, text
+                    ):
+                        continue
+                    known_uids.add(related_uid)
+                    additions.append(
+                        (
+                            related_section,
+                            0.30 * source_score,
+                            (),
+                            (
+                                f"Cross-referenced by "
+                                f"{source_section.citation_short}",
+                            ),
+                        )
+                    )
+            if additions:
+                scored.extend(additions)
+                scored.sort(key=lambda item: (-item[1], item[0].citation_short))
+            if referenced_by:
+                rescored = []
+                for section, score, labels, reasons in scored:
+                    reference = referenced_by.get(section.uid)
+                    if reference is None:
+                        rescored.append((section, score, labels, reasons))
+                        continue
+                    source_citation, source_score = reference
+                    bonus = 0.06 + 0.08 * (source_score / max(0.01, top[0][1]))
+                    if not any("Cross-referenced" in reason for reason in reasons):
+                        reasons = reasons + (
+                            f"Cross-referenced by {source_citation}",
+                        )
+                    rescored.append((section, min(1.0, score + bonus), labels, reasons))
+                scored = rescored
+                scored.sort(key=lambda item: (-item[1], item[0].citation_short))
+
         chosen: list[tuple[Section, float, tuple[str, ...], tuple[str, ...]]] = []
         chosen_uids: set[str] = set()
 
@@ -977,8 +1174,95 @@ class Library:
             only_b_concepts=[(key, b_labels[key]) for key in sorted(only_b_keys)],
         )
         report.checklist = self._build_checklist(report)
+        report.deadlines = self._extract_report_deadlines(report)
+        report.penalties = self._extract_report_penalties(report)
+        report.facts_to_confirm = self._build_facts_to_confirm(report)
         report.overview = self._build_overview(report)
         return report
+
+    @staticmethod
+    def _report_rows(report: ComparisonReport) -> list[ComparisonRow]:
+        return report.shared + report.only_a[:8] + report.only_b[:8]
+
+    def _extract_report_deadlines(
+        self, report: ComparisonReport
+    ) -> list[tuple[str, str]]:
+        rows: list[tuple[str, str]] = []
+        seen: set[str] = set()
+        for row in self._report_rows(report):
+            for sentence in extract_deadlines(row.section.body, limit=2):
+                key = sentence[:90].lower()
+                if key in seen:
+                    continue
+                seen.add(key)
+                rows.append((row.section.citation_short, sentence))
+                if len(rows) >= 8:
+                    return rows
+        return rows
+
+    def _extract_report_penalties(
+        self, report: ComparisonReport
+    ) -> list[tuple[str, str, str]]:
+        rows: list[tuple[str, str, str]] = []
+        seen: set[str] = set()
+        for row in self._report_rows(report):
+            for category, sentence in extract_penalties(row.section.body, limit=2):
+                key = sentence[:90].lower()
+                if key in seen:
+                    continue
+                seen.add(key)
+                rows.append((category, row.section.citation_short, sentence))
+                if len(rows) >= 8:
+                    return rows
+        return rows
+
+    def _build_facts_to_confirm(self, report: ComparisonReport) -> list[str]:
+        keys = {
+            key
+            for source in (report.a, report.b)
+            for key, _label, _strength in source.concepts
+        }
+        facts: list[str] = []
+        if report.deadlines:
+            facts.append(
+                "What event started the clock, and when did it happen? "
+                "Check the exact counting rule in the cited section."
+            )
+        if keys & {"licensing", "broker_supervision", "education"}:
+            facts.append(
+                "Was the person licensed, sponsored, or exempt at the time of the conduct?"
+            )
+        if keys & {"trust_funds", "commissions"}:
+            facts.append(
+                "Who received the money, in what capacity, and was it placed in the required account?"
+            )
+        if keys & {"disclosure", "advertising", "contracts"}:
+            facts.append(
+                "What was said or written, to whom, and when? Keep the advertisement, notice, or contract."
+            )
+        if keys & {"inspections", "conflict"}:
+            facts.append(
+                "What was the inspector's role, ownership interest, or repair relationship?"
+            )
+        if keys & {"agency"}:
+            facts.append(
+                "Who represented whom, and did each party receive the required disclosure?"
+            )
+        if keys & {"timeshare"}:
+            facts.append(
+                "Was the plan registered, what was signed, and was a cancellation right disclosed?"
+            )
+        if report.penalties:
+            facts.append(
+                "Which consequence language actually applies to these facts? "
+                "The extracted penalties are possibilities, not findings."
+            )
+        if not facts:
+            facts.append(
+                "Add concrete facts: who did what, when, what was written or advertised, "
+                "and whether money or a license was involved."
+            )
+        return facts[:5]
 
     def _build_overview(self, report: ComparisonReport) -> str:
         lines: list[str] = []
@@ -1030,6 +1314,17 @@ class Library:
                     row.section.citation_short for row in report.only_b[:4]
                 )
                 + "."
+            )
+        if report.deadlines:
+            lines.append(
+                f"{len(report.deadlines)} deadline or periodic-trigger sentence(s) "
+                "were extracted for review; they are not a calculation of the "
+                "legally correct deadline."
+            )
+        if report.penalties:
+            lines.append(
+                f"{len(report.penalties)} possible consequence sentence(s) were "
+                "extracted; they do not decide which penalty applies."
             )
         if not lines:
             lines.append(

@@ -11,6 +11,8 @@ from trec_explorer.engine import (  # noqa: E402
     Library,
     content_tokens,
     detect_concepts,
+    extract_deadlines,
+    extract_penalties,
     highlight_spans,
 )
 
@@ -35,14 +37,18 @@ class LibraryTests(unittest.TestCase):
         cls.lib = Library(DATA)
 
     def test_counts_and_chapters(self) -> None:
-        self.assertEqual(len(self.lib.sections), 481)
+        self.assertEqual(len(self.lib.sections), 515)
         counts = self.lib.meta["counts"]
         self.assertEqual(counts["trec-rules"], 205)
         self.assertEqual(counts["oc1101"], 164)
         self.assertEqual(counts["oc1102"], 50)
+        self.assertEqual(counts["oc1105"], 12)
         self.assertEqual(counts["pr221"], 62)
-        self.assertEqual(len(self.lib.chapters()), 10)
+        self.assertEqual(counts["oc53"], 22)
+        self.assertEqual(len(self.lib.chapters()), 12)
         self.assertFalse([s for s in self.lib.sections if not s.body.strip()])
+        self.assertIn("source_hashes", self.lib.meta)
+        self.assertEqual(len(self.lib.meta["source_hashes"]), 6)
 
     def test_search_trust_money(self) -> None:
         hits = self.lib.search("trust money", limit=5)
@@ -112,6 +118,37 @@ class LibraryTests(unittest.TestCase):
         report = self.lib.compare(a2, b2)
         cited = {row.section.citation_short for row in report.shared}
         self.assertIn("§535.154", cited)
+
+    def test_related_authorities_and_added_statutes(self) -> None:
+        related = {
+            section.citation_short
+            for section in self.lib.related_sections("rule-535.154")
+        }
+        self.assertIn("§535.155", related)
+        sources = {source["id"]: source for source in self.lib.meta["sources"]}
+        self.assertEqual(sources["oc1105"]["scope"], "TREC")
+        self.assertEqual(sources["oc53"]["scope"], "Related licensing law")
+        self.assertEqual(self.lib.section_by_number("1105.002").kind, "Statute")
+
+    def test_deadline_and_penalty_extraction(self) -> None:
+        body = (
+            "A license holder must notify the commission within 30 days after "
+            "the event. The commission may suspend or revoke a license and may "
+            "impose an administrative penalty."
+        )
+        deadlines = extract_deadlines(body)
+        self.assertTrue(deadlines)
+        self.assertIn("30 days", deadlines[0])
+        penalties = dict(extract_penalties(body))
+        self.assertIn("License status", penalties)
+        self.assertIn("administrative", penalties["License status"].lower())
+
+    def test_comparison_includes_review_aids(self) -> None:
+        report = self.lib.compare(A, B)
+        self.assertTrue(report.deadlines)
+        self.assertTrue(report.penalties)
+        self.assertTrue(report.facts_to_confirm)
+        self.assertTrue(any("clock" in fact for fact in report.facts_to_confirm))
 
     def test_text_helpers(self) -> None:
         self.assertIn("trust", content_tokens("Trust money and earnest money"))

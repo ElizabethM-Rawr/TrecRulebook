@@ -1,7 +1,7 @@
 {
   "meta": {
-    "schema_version": 1,
-    "generated_at": "2026-11-05T21:00:24-06:00",
+    "schema_version": 2,
+    "generated_at": "2026-11-05T22:23:42-06:00",
     "generated_at_display": "November 05, 2026",
     "rules_url": "https://www.trec.texas.gov/agency-information/rules-and-laws/trec-rules",
     "sources": [
@@ -9,6 +9,7 @@
         "id": "trec-rules",
         "name": "TREC Rules",
         "kind": "Rule",
+        "scope": "TREC",
         "url": "https://www.trec.texas.gov/agency-information/rules-and-laws/trec-rules",
         "description": "Texas Administrative Code, Title 22, Part 23"
       },
@@ -16,6 +17,7 @@
         "id": "oc1101",
         "name": "Tex. Occ. Code ch. 1101",
         "kind": "Statute",
+        "scope": "TREC",
         "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1101.htm",
         "description": "Real Estate License Act (TRELA)"
       },
@@ -23,24 +25,52 @@
         "id": "oc1102",
         "name": "Tex. Occ. Code ch. 1102",
         "kind": "Statute",
+        "scope": "TREC",
         "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1102.htm",
         "description": "Real Estate Inspectors"
+      },
+      {
+        "id": "oc1105",
+        "name": "Tex. Occ. Code ch. 1105",
+        "kind": "Statute",
+        "scope": "TREC",
+        "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm",
+        "description": "TREC Self-Directed and Semi-Independent Status"
       },
       {
         "id": "pr221",
         "name": "Tex. Prop. Code ch. 221",
         "kind": "Statute",
+        "scope": "TREC",
         "url": "https://statutes.capitol.texas.gov/Docs/PR/htm/PR.221.htm",
         "description": "Timeshare Plans"
+      },
+      {
+        "id": "oc53",
+        "name": "Tex. Occ. Code ch. 53",
+        "kind": "Statute",
+        "scope": "Related licensing law",
+        "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm",
+        "description": "Consequences of Criminal Conviction"
       }
     ],
     "counts": {
       "trec-rules": 205,
       "oc1101": 164,
       "oc1102": 50,
-      "pr221": 62
+      "oc1105": 12,
+      "pr221": 62,
+      "oc53": 22
     },
-    "total_sections": 481,
+    "total_sections": 515,
+    "source_hashes": {
+      "trec-rules": "dd9fecad7f453c55cd44eca4221efde6b6da3a0ef710dd69d9923bb92145d6e1",
+      "oc1101": "a1e854ca332ff35a17bdfbf2f12f1dd44361865f475a2cbd247866203963c2ab",
+      "oc1102": "d5a686cf737797a132ccdfb84efd270681740b6bbeefc4fc6dd02e6318d62178",
+      "oc1105": "a159add4d11c20c79e6fa953def759b26b7906ad92128f87c4637c5f85b158ff",
+      "pr221": "922ebd934aa04497c033a56f10480cac233263aa64a608234ef9e08b570d6b07",
+      "oc53": "e0e7916a33e751c1bc55abe966b5dc290081d67b91c5064b5d813689f1ff454f"
+    },
     "disclaimer": "Educational research aid only, not legal advice. The Texas Secretary of State maintains the official text of agency rules, and the Texas Legislature maintains the official statutes. Verify every citation against the official source before acting."
   },
   "sections": [
@@ -247,8 +277,8 @@
         "Licensing, sponsorship & renewal",
         "Complaints, discipline & penalties",
         "Broker responsibility & supervision",
-        "Contracts & promulgated forms",
-        "Inspections & standards of practice"
+        "Conflicts of interest & dual capacity",
+        "Contracts & promulgated forms"
       ],
       "word_count": 394
     },
@@ -837,8 +867,8 @@
         "Advertising, signs & business names",
         "Agency & fiduciary duties",
         "Contracts & promulgated forms",
-        "Licensing, sponsorship & renewal",
-        "Commissions, fees & referrals"
+        "Inspector conduct, reports & insurance",
+        "Licensing, sponsorship & renewal"
       ],
       "word_count": 947
     },
@@ -907,7 +937,8 @@
         "Contracts & promulgated forms",
         "Licensing, sponsorship & renewal",
         "Unlicensed activity & exemptions",
-        "Commissions, fees & referrals"
+        "Commissions, fees & referrals",
+        "Inspector conduct, reports & insurance"
       ],
       "word_count": 404
     },
@@ -927,6 +958,7 @@
       "body": "1. does not use the option or contract to purchase to engage in real estate brokerage; and\n2. discloses in writing the nature of the equitable interest to any seller or potential buyer.\n(a) A person may acquire an option or enter into a contract to purchase real property and then sell or offer to sell the option or assign or offer to assign the interest in the contract without having a real estate license if the person:\n(b) A person selling or offering to sell an option or assigning or offering to assign an interest in a contract to purchase real property without disclosing the nature of that interest as provided by subsection (a) of this section is engaging in real estate brokerage.\n(c) A license holder acting on his or her own behalf or in a capacity described by §535.144(a) of this chapter (relating to When Acquiring or Disposing of Own Property or Property of Spouse, Parent or Child) who is selling an option or assigning an interest in a contract to purchase real property must disclose in writing to any seller or potential buyer that the license holder is selling an option or assigning an interest in a contract and that the license holder does not have legal title to the real property.",
       "summary": "1. does not use the option or contract to purchase to engage in real estate brokerage; and 2. discloses in writing the nature of the equitable interest to any seller or potential buyer.",
       "tags": [
+        "Conflicts of interest & dual capacity",
         "Contracts & promulgated forms"
       ],
       "word_count": 216
@@ -1440,6 +1472,7 @@
       "summary": "1. \"Good standing\" has the meaning assigned by §55.0042, Occupations Code. 2. \"Military service member\" has the meaning assigned by §55.001(4), Occupations Code. 3. \"Military spouse\" has the meaning assigned by §55.001(5), Occupations Code. 4.",
       "tags": [
         "Licensing, sponsorship & renewal",
+        "Conflicts of interest & dual capacity",
         "Broker responsibility & supervision",
         "Easement / right-of-way practice",
         "Education & continuing education",
@@ -1538,6 +1571,7 @@
         "Inspections & standards of practice",
         "Licensing, sponsorship & renewal",
         "Broker responsibility & supervision",
+        "Conflicts of interest & dual capacity",
         "Easement / right-of-way practice"
       ],
       "word_count": 209
@@ -1726,7 +1760,8 @@
         "Inspections & standards of practice",
         "Contracts & promulgated forms",
         "Broker responsibility & supervision",
-        "Commissions, fees & referrals"
+        "Commissions, fees & referrals",
+        "Conflicts of interest & dual capacity"
       ],
       "word_count": 1010
     },
@@ -2124,9 +2159,9 @@
         "Complaints, discipline & penalties",
         "Inspections & standards of practice",
         "Licensing, sponsorship & renewal",
-        "Agency & fiduciary duties",
-        "Education & continuing education",
-        "Inspector conduct, reports & insurance"
+        "Conflicts of interest & dual capacity",
+        "Inspector conduct, reports & insurance",
+        "Agency & fiduciary duties"
       ],
       "word_count": 1053
     },
@@ -2188,6 +2223,7 @@
       "body": "1. the license holder's spouse, parent or child;\n2. a business entity in which the license holder is more than a 10% owner; or\n3. a trust for which the license holder acts as trustee or of which the license holder or the license holder's spouse, parent or child is a beneficiary.\n(a) For purposes of §1101.652(a-1)(1) of the Act \"license holder\" includes a license holder acting on behalf of:\n(b) A license holder engaging in a real estate transaction on his or her own behalf or in a capacity described by subsection (a), is obligated to disclose in writing that he or she is a licensed real estate broker or sales agent acting on his or her own behalf or in a capacity described by subsection (a) in any contract of sale or rental agreement or in any other writing given before entering into any contract of sale or rental agreement.\n(c) A license holder acting on his or her own behalf or in a capacity described by subsection (a) shall not use the license holder's expertise to the disadvantage of a person with whom the license holder deals.",
       "summary": "1. the license holder's spouse, parent or child; 2. a business entity in which the license holder is more than a 10% owner; or 3.",
       "tags": [
+        "Conflicts of interest & dual capacity",
         "Licensing, sponsorship & renewal"
       ],
       "word_count": 190
@@ -2278,10 +2314,10 @@
       "tags": [
         "Commissions, fees & referrals",
         "Inspections & standards of practice",
+        "Conflicts of interest & dual capacity",
         "Contracts & promulgated forms",
         "Disclosures & required notices",
-        "Unlicensed activity & exemptions",
-        "Agency & fiduciary duties"
+        "Unlicensed activity & exemptions"
       ],
       "word_count": 636
     },
@@ -2344,9 +2380,9 @@
       "tags": [
         "Advertising, signs & business names",
         "Licensing, sponsorship & renewal",
+        "Inspector conduct, reports & insurance",
         "Commissions, fees & referrals",
-        "Contracts & promulgated forms",
-        "Inspector conduct, reports & insurance"
+        "Contracts & promulgated forms"
       ],
       "word_count": 556
     },
@@ -2522,7 +2558,7 @@
         "Consumer protection & fair dealing",
         "Agency & fiduciary duties",
         "Commissions, fees & referrals",
-        "Inspections & standards of practice"
+        "Conflicts of interest & dual capacity"
       ],
       "word_count": 476
     },
@@ -2773,8 +2809,8 @@
         "Consumer protection & fair dealing",
         "Inspections & standards of practice",
         "Agency & fiduciary duties",
-        "Contracts & promulgated forms",
-        "Disclosures & required notices"
+        "Conflicts of interest & dual capacity",
+        "Contracts & promulgated forms"
       ],
       "word_count": 967
     },
@@ -2796,8 +2832,8 @@
       "tags": [
         "Advertising, signs & business names",
         "Inspections & standards of practice",
-        "Complaints, discipline & penalties",
         "Inspector conduct, reports & insurance",
+        "Complaints, discipline & penalties",
         "Licensing, sponsorship & renewal"
       ],
       "word_count": 345
@@ -2913,6 +2949,7 @@
       "tags": [
         "Inspections & standards of practice",
         "Contracts & promulgated forms",
+        "Conflicts of interest & dual capacity",
         "Broker responsibility & supervision",
         "Disclosures & required notices",
         "Records & retention"
@@ -2936,6 +2973,7 @@
       "summary": "(A) render a written opinion as to the performance of the foundation; (i) the type of foundations; and (ii) the vantage point from which the crawl space was inspected; (B) report: (i) binding, out-of-square, non-latching doors; (ii) framing or frieze board separations; (iii) sloping floors; (iv) window, wall, floor, or ceiling cracks or separations; and (v) rotating, buckling, cracking, or deflecting masonry cladding; and (C) generally report present and visible indications used to render the opinion of adverse performance, such as: (i) deteriorated materials; (ii) deficiencies in foundation components such as; beams, joists, bridging, blocking, piers, posts, pilings, columns, sills or subfloor; (iii) deficiencies in retaining walls related to foundation performance; (iv) exposed or damaged reinforcement; (v) crawl space ventilation that is not performing; and (vi) crawl space drainage that is not performing.",
       "tags": [
         "Inspections & standards of practice",
+        "Conflicts of interest & dual capacity",
         "Records & retention"
       ],
       "word_count": 1348
@@ -2976,7 +3014,8 @@
       "body": "(i) the type of heating systems; and\n(ii) the energy sources; and\n(A) report:\n(i) inoperative units;\n(ii) deficiencies in the thermostats;\n(iii) inappropriate location;\n(iv) the lack of protection from physical damage;\n(v) burners, burner ignition devices or heating elements, switches, and thermostats that are not a minimum of 18 inches above the lowest garage floor elevation, unless the unit is listed for garage floor installation;\n(vi) the absence of an opening that would allow access to equipment for inspection, service, repair or replacement without removing permanent construction or building finish;\n(vii) when applicable; a floored passageway and service platform that would allow access for equipment inspection, service, repair or replacement; and\n(viii) deficiencies in mounting and performance of window and wall units.\n(B) report as Deficient:\n1. General requirements. The inspector shall:\n(A) performance of heat pumps;\n(B) performance of heating elements; and\n(C) condition of conductors; and\n2. Requirements for electric units. The inspector shall report deficiencies in:\n(A) gas leaks in the heating equipment not associated with the gas distribution system;\n(B) flame impingement, uplifting flame, improper flame color, or excessive scale buildup; and\n(i) combustion, and dilution air; and\n(ii) the vent pipe, draft hood, draft, proximity to combustibles, and vent termination point and clearances.\n(C) deficiencies in:\n3. Requirements for gas units. The inspector shall report as Deficient:\n(a) Heating equipment.\n(i) report the type of systems;\n(ii) measure and report the temperature difference between the supply air and the returned air or report industry-accepted method used to determine performance; and\n(iii) generally report extraneous factors or conditions, present on the day of the inspection, that would adversely impact the temperature differential of an otherwise performing unit; and\n(A) the inspector shall:\n(i) inoperative units;\n(I) fails to achieve a 15 degrees Fahrenheit to 22 degrees Fahrenheit temperature differential; or\n(II) fails to cool adequately as determined by other industry-accepted methods;\n(ii) deficiencies in the performance of the cooling system that:\n(iii) the absence of an opening that would allow access to equipment for inspection, service, repair or replacement without removing permanent construction or building finish;\n(iv) when applicable; a floored passageway and service platform that would allow access for equipment inspection, service, repair or replacement;\n(v) noticeable vibration of blowers or fans;\n(vi) water in the auxiliary/secondary drain pan;\n(vii) a primary drain pipe that discharges in a sewer vent;\n(viii) missing or deficient refrigerant pipe insulation;\n(ix) dirty coils, where accessible;\n(x) condensing units lacking adequate clearances or air circulation or that has deficiencies in the fins, location, levelness, or elevation above grade surfaces; and\n(I) the condensate drain and auxiliary/secondary pan and drain system;\n(II) mounting and performance of window or wall units; and\n(III) thermostats.\n(xi) deficiencies in:\n(B) the inspector shall report as Deficient:\n1. Requirements for cooling units other than evaporative coolers.\n(i) type of systems; and\n(ii) the type of water supply line; and\n(A) the inspector shall report:\n(i) inoperative units;\n(ii) inadequate access and clearances;\n(iii) deficiencies in performance or mounting;\n(iv) missing or damaged components;\n(v) the presence of active water leaks; and\n(vi) the absence of backflow prevention.\n(B) the inspector shall report as Deficient:\n2. Requirements for evaporative coolers.\n(b) Cooling equipment.\n(A) damaged duct systems or improper material;\n(B) damaged or missing duct insulation;\n(C) the absence of air flow at accessible supply registers;\n(D) the presence of gas piping and sewer vents concealed in ducts, plenums and chases;\n(E) ducts or plenums in contact with earth; and\n(i) filters;\n(ii) grills or registers; and\n(iii) the location of return air openings.\n(F) deficiencies in:\n1. the inspector shall report as Deficient:\n(c) Duct systems, chases, and vents.\n1. program digital thermostats or controls;\n(A) for pressure of the system refrigerant, type of refrigerant, or refrigerant leaks;\n(B) winterized or decommissioned equipment; or\n(C) duct fans, humidifiers, dehumidifiers, air purifiers, motorized dampers, electronic air filters, multi-stage controllers, sequencers, heat reclaimers, wood burning stoves, boilers, oil-fired units, supplemental heating appliances, de-icing provisions, or reversing valves;\n2. inspect:\n(A) setback features on thermostats or controls;\n(B) radiant heaters, steam heat systems, or unvented gas-fired heating appliances; or\n(i) cooling equipment when the outdoor temperature is less than 60 degrees Fahrenheit; and\n(ii) heat pumps, in the heat pump mode, when the outdoor temperature is above 70 degrees Fahrenheit;\n(C) cooling or heating systems when weather conditions or other circumstances may cause equipment damage, including:\n3. operate:\n(A) compatibility of components;\n(B) tonnage and manufacturer match of indoor coils and outside coils or condensing units;\n(C) the accuracy of thermostats; or\n(D) the integrity of the heat exchanger; or\n4. verify:\n(A) sizing, efficiency, or adequacy of the system;\n(B) balanced air flow of the conditioned air to the various parts of the building; or\n(C) types of materials contained in insulation.\n5. determine:\n(d) For heating, ventilation, and air conditioning systems inspected under this section, the inspector is not required to perform the following actions:",
       "summary": "(i) the type of heating systems; and (ii) the energy sources; and (A) report: (i) inoperative units; (ii) deficiencies in the thermostats; (iii) inappropriate location; (iv) the lack of protection from physical damage; (v) burners, burner ignition devices or heating elements, switches, and thermostats that are not a minimum of 18 inches above the lowest garage floor elevation, unless the unit is listed for garage floor installation; (vi) the absence of an opening that would allow access to equipment for inspection, service, repair or replacement without removing permanent construction or building finish; (vii) when applicable; a floored passageway and service platform that would allow access for equipment inspection, service, repair or replacement; and (viii) deficiencies in mounting and performance of window and wall units.",
       "tags": [
-        "Inspections & standards of practice"
+        "Inspections & standards of practice",
+        "Conflicts of interest & dual capacity"
       ],
       "word_count": 832
     },
@@ -2997,6 +3036,7 @@
       "summary": "(i) location of water meter; (ii) location of homeowners main water supply shutoff valve; and (iii) static water pressure; (iv) visible material used for water supply lines and drain lines; (A) report: (i) the presence of active leaks; (ii) water pressure exceeding 80 PSI; (iii) the lack of a pressure reducing valve when the water pressure exceeds 80 PSI; (iv) the lack of a visible expansion tank when a pressure reducing valve, check valve, or backflow preventer is in place at the water supply line/system; (I) fixture shutoff valves; (II) dielectric unions, when applicable; (III) back-flow devices, anti-siphon devices, or air gaps at the flow end of fixtures; and (v) the absence of: (I) water supply pipes and waste pipes; (II) the installation and termination of the vent system; (III) the performance of fixtures and faucets not connected to an appliance; (IV) water supply, as determined by viewing functional flow in two fixtures operated simultaneously; (V) fixture drain performance; (VI) orientation of hot and cold faucets; (VII) installed mechanical drain stops; (VIII) commodes, fixtures, showers, tubs, and enclosures; and (IX) the condition of the gas distribution system.",
       "tags": [
         "Inspections & standards of practice",
+        "Conflicts of interest & dual capacity",
         "Unlicensed activity & exemptions"
       ],
       "word_count": 953
@@ -3083,6 +3123,7 @@
         "Rental & property management",
         "Advertising, signs & business names",
         "Contracts & promulgated forms",
+        "Inspector conduct, reports & insurance",
         "Licensing, sponsorship & renewal"
       ],
       "word_count": 412
@@ -4119,7 +4160,7 @@
         "Agency & fiduciary duties",
         "Broker responsibility & supervision",
         "Commissions, fees & referrals",
-        "Contracts & promulgated forms"
+        "Conflicts of interest & dual capacity"
       ],
       "word_count": 803
     },
@@ -4521,6 +4562,7 @@
       "summary": "(a) A person is engaged in real estate brokerage if the person, with the expectation of receiving valuable consideration, directly or indirectly performs or offers, attempts, or agrees to perform for another person any act described by Section 1101.002(1), as a part of a transaction or as an entire transaction.",
       "tags": [
         "Broker responsibility & supervision",
+        "Conflicts of interest & dual capacity",
         "Licensing, sponsorship & renewal"
       ],
       "word_count": 143
@@ -5023,7 +5065,8 @@
       "body": "(a) The commission may not adopt a rule restricting advertising or competitive bidding by a person regulated by the commission except to prohibit a false, misleading, or deceptive practice by the person.\n\n(b) The commission may not include in rules to prohibit false, misleading, or deceptive practices by a person regulated by the commission a rule that:\n\n(1) restricts the use of any advertising medium;\n\n(2) restricts the person's personal appearance or use of the person's voice in an advertisement;\n\n(3) relates to the size or duration of an advertisement used by the person;\n\n(4) restricts the person's advertisement under an assumed or trade name that is authorized by a law of this state and registered with the commission; or\n\n(5) requires the term \"broker,\" \"agent,\" or a similar designation or term, a reference to the commission, or the person's license number to be included in the person's advertisement.\n\nActs 2015, 84th Leg., R.S., Ch. 1158 (S.B. 699), Sec. 19, eff. January 1, 2016.\n\nActs 2017, 85th Leg., R.S., Ch. 974 (S.B. 2212), Sec. 2, eff. September 1, 2017.",
       "summary": "(a) The commission may not adopt a rule restricting advertising or competitive bidding by a person regulated by the commission except to prohibit a false, misleading, or deceptive practice by the person.",
       "tags": [
-        "Advertising, signs & business names"
+        "Advertising, signs & business names",
+        "Inspector conduct, reports & insurance"
       ],
       "word_count": 179
     },
@@ -6325,6 +6368,7 @@
       "summary": "In this subchapter: (1) \"Intermediary\" means a broker who is employed to negotiate a transaction between the parties to a transaction and for that purpose may act as an agent of the parties.",
       "tags": [
         "Agency & fiduciary duties",
+        "Conflicts of interest & dual capacity",
         "Contracts & promulgated forms",
         "Rental & property management"
       ],
@@ -6472,6 +6516,7 @@
       "tags": [
         "Agency & fiduciary duties",
         "Disclosures & required notices",
+        "Conflicts of interest & dual capacity",
         "Contracts & promulgated forms",
         "Rental & property management"
       ],
@@ -6494,6 +6539,7 @@
       "summary": "(a) A broker may act as an intermediary between parties to a real estate transaction if: (1) the broker obtains written consent from each party for the broker to act as an intermediary in the transaction; and (2) the written consent of the parties states the source of any expected compensation to the broker.",
       "tags": [
         "Agency & fiduciary duties",
+        "Conflicts of interest & dual capacity",
         "Contracts & promulgated forms",
         "Rental & property management"
       ],
@@ -6514,7 +6560,9 @@
       "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1101.htm#1101.560",
       "body": "(a) A broker who complies with the written consent requirements of Section 1101.559 may appoint:\n\n(1) a license holder associated with the broker to communicate with and carry out instructions of one party to a real estate transaction; and\n\n(2) another license holder associated with the broker to communicate with and carry out instructions of any other party to the transaction.\n\n(b) A license holder may be appointed under this section only if:\n\n(1) the written consent of the parties under Section 1101.559 authorizes the broker to make the appointment; and\n\n(2) the broker provides written notice of the appointment to all parties involved in the real estate transaction.\n\n(c) A license holder appointed under this section may provide opinions and advice during negotiations to the party to whom the license holder is appointed.",
       "summary": "(a) A broker who complies with the written consent requirements of Section 1101.559 may appoint: (1) a license holder associated with the broker to communicate with and carry out instructions of one party to a real estate transaction; and (2) another license holder associated with the broker to communicate with and carry out instructions of any other party to the transaction.",
-      "tags": [],
+      "tags": [
+        "Conflicts of interest & dual capacity"
+      ],
       "word_count": 134
     },
     {
@@ -6534,6 +6582,7 @@
       "summary": "(a) The duties of a license holder acting as an intermediary under this subchapter supersede the duties of a license holder established under any other law, including common law.",
       "tags": [
         "Agency & fiduciary duties",
+        "Conflicts of interest & dual capacity",
         "Contracts & promulgated forms",
         "Rental & property management"
       ],
@@ -6933,6 +6982,7 @@
         "Licensing, sponsorship & renewal",
         "Commissions, fees & referrals",
         "Contracts & promulgated forms",
+        "Conflicts of interest & dual capacity",
         "Rental & property management"
       ],
       "word_count": 324
@@ -6956,9 +7006,9 @@
         "Consumer protection & fair dealing",
         "Advertising, signs & business names",
         "Contracts & promulgated forms",
+        "Inspector conduct, reports & insurance",
         "Agency & fiduciary duties",
-        "Commissions, fees & referrals",
-        "Complaints, discipline & penalties"
+        "Commissions, fees & referrals"
       ],
       "word_count": 1556
     },
@@ -7791,6 +7841,7 @@
       "summary": "In this chapter: (1) \"Apprentice inspector\" means a person who is in training under the direct supervision of a professional inspector or a real estate inspector to become qualified to perform real estate inspections.",
       "tags": [
         "Inspections & standards of practice",
+        "Conflicts of interest & dual capacity",
         "Contracts & promulgated forms",
         "Education & continuing education"
       ],
@@ -8598,6 +8649,7 @@
       "body": "An inspector may not act in a transaction in the dual capacity of inspector and:\n\n(1) undisclosed principal; or\n\n(2) broker or salesperson.",
       "summary": "An inspector may not act in a transaction in the dual capacity of inspector and: (1) undisclosed principal; or (2) broker or salesperson.",
       "tags": [
+        "Conflicts of interest & dual capacity",
         "Agency & fiduciary duties",
         "Inspections & standards of practice",
         "Inspector conduct, reports & insurance"
@@ -8621,6 +8673,7 @@
       "summary": "An inspector may not perform or agree to perform repairs or maintenance in connection with a real estate inspection under an earnest money contract, lease, or exchange of real property.",
       "tags": [
         "Inspections & standards of practice",
+        "Conflicts of interest & dual capacity",
         "Contracts & promulgated forms"
       ],
       "word_count": 30
@@ -8809,6 +8862,231 @@
         "Practice, procedure & deadlines"
       ],
       "word_count": 167
+    },
+    {
+      "uid": "stat-1105.001",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.001",
+      "citation_short": "§1105.001",
+      "section": "1105.001",
+      "title": "Definitions",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.001",
+      "body": "In this section:\n\n(1) \"Agency\" means the commission and the board.\n\n(2) \"Board\" means the Texas Appraiser Licensing and Certification Board.\n\n(3) \"Commission\" means the Texas Real Estate Commission.",
+      "summary": "In this section: (1) \"Agency\" means the commission and the board. (2) \"Board\" means the Texas Appraiser Licensing and Certification Board. (3) \"Commission\" means the Texas Real Estate Commission.",
+      "tags": [],
+      "word_count": 29
+    },
+    {
+      "uid": "stat-1105.002",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.002",
+      "citation_short": "§1105.002",
+      "section": "1105.002",
+      "title": "Self-directed and Semi-independent Status",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.002",
+      "body": "(a) Notwithstanding any other provision of law, the agency is self-directed and semi-independent as specified by this chapter. Any Act of the 82nd Legislature that relates to the agency and that is inconsistent with the agency being self-directed and semi-independent may be implemented by the administrator of the agency only on authorization by the agency.\n\n(b) This chapter does not affect the board's status as an independent subdivision of the commission as provided by Section 1103.051.",
+      "summary": "(a) Notwithstanding any other provision of law, the agency is self-directed and semi-independent as specified by this chapter.",
+      "tags": [],
+      "word_count": 76
+    },
+    {
+      "uid": "stat-1105.003",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.003",
+      "citation_short": "§1105.003",
+      "section": "1105.003",
+      "title": "Budget, Revenues, and Expenses",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.003",
+      "body": "(a) Notwithstanding any other provision of law, including the General Appropriations Act, the commission and the board shall each adopt a separate budget annually using generally accepted accounting principles.\n\n(b) The commission shall be responsible for all direct and indirect costs of the commission's existence and operation. The board shall be responsible for all direct and indirect costs of the board's existence and operation. The agency may not directly or indirectly cause the general revenue fund to incur any cost.\n\n(c) Notwithstanding any other provision of law, the commission and the board may each set the amounts of the respective fees, penalties, charges, and revenues required or permitted by statute or rule as necessary for the purpose of carrying out the separate functions of the commission and the board and funding the respective budgets of the commission and the board adopted and approved under Subsection (a).\n\n(d) All fees and funds collected by the commission or the board and any funds appropriated to the commission or the board shall be deposited in interest-bearing deposit accounts in the Texas Treasury Safekeeping Trust Company. The comptroller shall contract with the commission and the board for the maintenance of the deposit accounts under terms comparable to a contract between a commercial banking institution and the institution's customers.\n\n(e) Repealed by Acts 2015, 84th Leg., R.S., Ch. 448 , Sec. 31(l)(16), eff. September 1, 2015.\n\n(f) Not later than August 31 of each fiscal year, the agency shall remit $750,000 to the general revenue fund.\n\n(g) The fiscal year for the agency begins on September 1 and ends on August 31.\n\nActs 2015, 84th Leg., R.S., Ch. 448 (H.B. 7), Sec. 31(l)(16), eff. September 1, 2015.\n\nActs 2015, 84th Leg., R.S., Ch. 448 (H.B. 7), Sec. 32, eff. September 1, 2015.",
+      "summary": "(a) Notwithstanding any other provision of law, including the General Appropriations Act, the commission and the board shall each adopt a separate budget annually using generally accepted accounting principles.",
+      "tags": [
+        "Agency & fiduciary duties"
+      ],
+      "word_count": 297
+    },
+    {
+      "uid": "stat-1105.004",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.004",
+      "citation_short": "§1105.004",
+      "section": "1105.004",
+      "title": "Audits",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.004",
+      "body": "(a) This chapter does not affect the duty of the state auditor to audit the agency. The state auditor shall enter into a contract and schedule with the agency to conduct audits.\n\n(b) The agency shall reimburse the state auditor for all costs incurred in performing the audits and shall provide to the governor a copy of any audit performed.\n\nActs 2019, 86th Leg., R.S., Ch. 334 (S.B. 624), Sec. 37, eff. September 1, 2019.",
+      "summary": "(a) This chapter does not affect the duty of the state auditor to audit the agency. The state auditor shall enter into a contract and schedule with the agency to conduct audits.",
+      "tags": [],
+      "word_count": 75
+    },
+    {
+      "uid": "stat-1105.005",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.005",
+      "citation_short": "§1105.005",
+      "section": "1105.005",
+      "title": "Records; Reporting Requirements",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.005",
+      "body": "(a) The agency shall keep financial and statistical information as necessary to disclose completely and accurately the financial condition and results of operations of the agency.\n\n(b) Before the beginning of each regular session of the legislature, the agency shall submit to the legislature and the governor a report describing all of the agency's activities in the previous biennium. The report must include:\n\n(1) an audit as required by Section 1105.004;\n\n(2) a financial report of the previous fiscal year, including reports on the financial condition and results of operations;\n\n(3) a description of all changes in fees imposed on regulated persons;\n\n(4) a report on changes in the regulatory jurisdiction of the agency;\n\n(5) a report on the number of examination candidates, license, certificate, and registration holders, and enforcement activities and any changes in those figures; and\n\n(6) a list of all new rules adopted or repealed.\n\n(c) In addition to the reporting requirements of Subsection (b), not later than November 1 of each year, the agency shall submit to the governor, the committee of each house of the legislature that has jurisdiction over appropriations, and the Legislative Budget Board a report that contains:\n\n(1) the salary for all agency personnel and the total amount of per diem expenses and travel expenses paid for all agency employees, including trend performance data for the preceding five fiscal years;\n\n(2) the total amount of per diem expenses and travel expenses paid for each member of the agency, including trend performance data for the preceding five fiscal years;\n\n(3) the agency's operating plan covering a period of two fiscal years;\n\n(4) the agency's operating budget, including revenues and a breakdown of expenditures by program and administrative expense, showing:\n\n(A) projected budget data for a period of two fiscal years; and\n\n(B) trend performance data for the preceding five fiscal years; and\n\n(5) trend performance data for the preceding five fiscal years regarding:\n\n(A) the number of full-time equivalent positions at the agency;\n\n(B) the number of complaints received from the public and the number of complaints initiated by agency staff;\n\n(C) the number of complaints dismissed and the number of complaints resolved by enforcement action;\n\n(D) the number of enforcement actions by sanction type;\n\n(E) the number of enforcement cases closed through voluntary compliance;\n\n(F) the amount of administrative penalties assessed and the rate of collection of assessed administrative penalties;\n\n(G) the number of enforcement cases that allege a threat to public health, safety, or welfare or a violation of professional standards of care and the disposition of those cases;\n\n(H) the average time to resolve a complaint;\n\n(I) the number of license holders or regulated persons broken down by type of license and license status, including inactive status or retired status;\n\n(J) the fee charged to issue and renew each type of license, certificate, or registration issued by the agency;\n\n(K) the average time to issue a license, certificate, or registration;\n\n(L) litigation costs, broken down by administrative hearings, judicial proceedings, and outside counsel costs; and\n\n(M) reserve fund balances.\n\nActs 2019, 86th Leg., R.S., Ch. 334 (S.B. 624), Sec. 38, eff. September 1, 2019.",
+      "summary": "(a) The agency shall keep financial and statistical information as necessary to disclose completely and accurately the financial condition and results of operations of the agency.",
+      "tags": [
+        "Complaints, discipline & penalties",
+        "Licensing, sponsorship & renewal",
+        "Commissions, fees & referrals",
+        "Practice, procedure & deadlines"
+      ],
+      "word_count": 524
+    },
+    {
+      "uid": "stat-1105.006",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.006",
+      "citation_short": "§1105.006",
+      "section": "1105.006",
+      "title": "Ability to Contract",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.006",
+      "body": "(a) To carry out and promote the objectives of this chapter, the commission or board may enter into contracts and do all other acts incidental to those contracts that are necessary for the administration of the commission's or board's respective affairs and for the attainment of the commission's or board's respective purposes, except as limited by Subsection (b).\n\n(b) Any indebtedness, liability, or obligation of the commission or board incurred under this section may not:\n\n(1) create a debt or other liability of this state or another entity other than the commission or board, as appropriate; or\n\n(2) create any personal liability on the part of the members or employees of the agency.",
+      "summary": "(a) To carry out and promote the objectives of this chapter, the commission or board may enter into contracts and do all other acts incidental to those contracts that are necessary for the administration of the commission's or board's respective affairs and for the attainment of the commission's or board's respective purposes, except as limited by Subsection (b).",
+      "tags": [],
+      "word_count": 113
+    },
+    {
+      "uid": "stat-1105.007",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.007",
+      "citation_short": "§1105.007",
+      "section": "1105.007",
+      "title": "Property",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.007",
+      "body": "The commission or board may acquire by lease and maintain, use, and operate any real, personal, or mixed property necessary to the exercise of the respective powers, rights, privileges, or functions of the commission or board.\n\nActs 2019, 86th Leg., R.S., Ch. 334 (S.B. 624), Sec. 39, eff. September 1, 2019.",
+      "summary": "The commission or board may acquire by lease and maintain, use, and operate any real, personal, or mixed property necessary to the exercise of the respective powers, rights, privileges, or functions of the commission or board.",
+      "tags": [],
+      "word_count": 51
+    },
+    {
+      "uid": "stat-1105.008",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.008",
+      "citation_short": "§1105.008",
+      "section": "1105.008",
+      "title": "Suits",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.008",
+      "body": "(a) The office of the attorney general shall represent the agency in any litigation.\n\n(b) The attorney general may assess and collect from the agency reasonable attorney's fees associated with any litigation under this section.\n\nActs 2019, 86th Leg., R.S., Ch. 334 (S.B. 624), Sec. 40, eff. September 1, 2019.",
+      "summary": "(a) The office of the attorney general shall represent the agency in any litigation. (b) The attorney general may assess and collect from the agency reasonable attorney's fees associated with any litigation under this section.",
+      "tags": [
+        "Agency & fiduciary duties"
+      ],
+      "word_count": 50
+    },
+    {
+      "uid": "stat-1105.009",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.009",
+      "citation_short": "§1105.009",
+      "section": "1105.009",
+      "title": "Administrative Hearings",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.009",
+      "body": "The State Office of Administrative Hearings shall enter into a contract with the agency for hearings conducted by the State Office of Administrative Hearings under a law administered by the commission or the board. The agency shall reimburse the State Office of Administrative Hearings for costs incurred in conducting the hearings.\n\nActs 2019, 86th Leg., R.S., Ch. 334 (S.B. 624), Sec. 41, eff. September 1, 2019.",
+      "summary": "The State Office of Administrative Hearings shall enter into a contract with the agency for hearings conducted by the State Office of Administrative Hearings under a law administered by the commission or the board.",
+      "tags": [],
+      "word_count": 66
+    },
+    {
+      "uid": "stat-1105.010",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.010",
+      "citation_short": "§1105.010",
+      "section": "1105.010",
+      "title": "Post-participation Liability",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.010",
+      "body": "(a) If the agency no longer has status under this chapter as a self-directed semi-independent agency for any reason, the agency shall be liable for any expenses or debts incurred by the agency during the time the agency was a self-directed semi-independent agency. The agency's liability under this section includes liability for any lease entered into by the agency. This state is not liable for any expense or debt covered by this subsection, and money from the general revenue fund may not be used to repay the expense or debt.\n\n(b) If the agency no longer has status under this chapter as a self-directed semi-independent agency for any reason, ownership of any property or other asset acquired by the agency during the time the agency was a self-directed semi-independent agency, including unexpended fees in a deposit account in the Texas Treasury Safekeeping Trust Company, shall be transferred to this state.",
+      "summary": "(a) If the agency no longer has status under this chapter as a self-directed semi-independent agency for any reason, the agency shall be liable for any expenses or debts incurred by the agency during the time the agency was a self-directed semi-independent agency.",
+      "tags": [],
+      "word_count": 150
+    },
+    {
+      "uid": "stat-1105.011",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.011",
+      "citation_short": "§1105.011",
+      "section": "1105.011",
+      "title": "Due Process; Open Government",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.011",
+      "body": "The commission and the board are governmental bodies for purposes of Chapters 551 and 552, Government Code. The commission is a state agency for purposes of Chapters 2001 and 2005, Government Code.",
+      "summary": "The commission and the board are governmental bodies for purposes of Chapters 551 and 552, Government Code. The commission is a state agency for purposes of Chapters 2001 and 2005, Government Code.",
+      "tags": [],
+      "word_count": 32
+    },
+    {
+      "uid": "stat-1105.012",
+      "source_id": "oc1105",
+      "source_name": "Tex. Occ. Code ch. 1105",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §1105.012",
+      "citation_short": "§1105.012",
+      "section": "1105.012",
+      "title": "Membership in Employees Retirement System",
+      "chapter": "1105",
+      "chapter_title": "TREC Self-Directed and Semi-Independent Status",
+      "subchapter": "",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.1105.htm#1105.012",
+      "body": "Employees of the agency are members of the Employees Retirement System of Texas under Chapter 812, Government Code, and the commission's and the board's transition to independent status as provided by this chapter has no effect on their membership or any benefits under that system.",
+      "summary": "Employees of the agency are members of the Employees Retirement System of Texas under Chapter 812, Government Code, and the commission's and the board's transition to independent status as provided by this chapter has no effect on their membership or any benefits under that system.",
+      "tags": [],
+      "word_count": 45
     },
     {
       "uid": "stat-221.001",
@@ -9232,7 +9510,8 @@
       "summary": "(a) Before the signing of any agreement to purchase a timeshare interest in which a prospective purchaser is also offered participation in any exchange program, the developer shall also deliver to the prospective purchaser the exchange disclosure statement of any exchange company whose service is advertised or offered by the developer or other person in connection with the disposition.",
       "tags": [
         "Timeshare plans",
-        "Contracts & promulgated forms"
+        "Contracts & promulgated forms",
+        "Inspector conduct, reports & insurance"
       ],
       "word_count": 342
     },
@@ -9927,8 +10206,8 @@
       "tags": [
         "Timeshare plans",
         "Contracts & promulgated forms",
-        "Advertising, signs & business names",
         "Inspector conduct, reports & insurance",
+        "Advertising, signs & business names",
         "Unlicensed activity & exemptions"
       ],
       "word_count": 300
@@ -10121,6 +10400,431 @@
         "Timeshare plans"
       ],
       "word_count": 81
+    },
+    {
+      "uid": "stat-53.001",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.001",
+      "citation_short": "§53.001",
+      "section": "53.001",
+      "title": "Applicability of Certain Definitions",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER A. GENERAL PROVISIONS",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.001",
+      "body": "The definitions provided by Chapter 2001, Government Code, apply to this chapter.\n\nActs 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.",
+      "summary": "The definitions provided by Chapter 2001, Government Code, apply to this chapter. Acts 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.",
+      "tags": [],
+      "word_count": 24
+    },
+    {
+      "uid": "stat-53.002",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.002",
+      "citation_short": "§53.002",
+      "section": "53.002",
+      "title": "Applicability of Chapter",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER A. GENERAL PROVISIONS",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.002",
+      "body": "This chapter does not apply to:\n\n(1) the Supreme Court of Texas, a person licensed under the court's authority on behalf of the judicial department of government, or an applicant for a license issued under the court's authority on behalf of the judicial department of government;\n\n(2) a person licensed or an applicant for a license under Chapter 1701;\n\n(3) an applicant for certification as emergency medical services personnel under Chapter 773, Health and Safety Code; or\n\n(4) a person who:\n\n(A) is licensed by the Texas Medical Board, the Texas State Board of Pharmacy, the State Board of Dental Examiners, or the State Board of Veterinary Medical Examiners; and\n\n(B) has been convicted of a felony under Chapter 481 or 483 or Section 485.033, Health and Safety Code.\n\nActs 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.\n\nActs 2009, 81st Leg., R.S., Ch. 1149 (H.B. 2845), Sec. 1, eff. September 1, 2009.\n\nActs 2011, 82nd Leg., R.S., Ch. 754 (H.B. 1402), Sec. 1, eff. September 1, 2011.",
+      "summary": "This chapter does not apply to: (1) the Supreme Court of Texas, a person licensed under the court's authority on behalf of the judicial department of government, or an applicant for a license issued under the court's authority on behalf of the judicial department of government; (2) a person licensed or an applicant for a license under Chapter 1701; (3) an applicant for certification as emergency medical services personnel under Chapter 773, Health and Safety Code; or (4) a person who: (A) is licensed by the Texas Medical Board, the Texas State Board of Pharmacy, the State Board of Dental Examiners, or the State Board of Veterinary Medical Examiners; and (B) has been convicted of a felony under Chapter 481 or 483 or Section 485.033, Health and Safety Code.",
+      "tags": [
+        "Licensing, sponsorship & renewal"
+      ],
+      "word_count": 171
+    },
+    {
+      "uid": "stat-53.003",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.003",
+      "citation_short": "§53.003",
+      "section": "53.003",
+      "title": "Legislative Intent; Liberal Construction of Subchapter",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER A. GENERAL PROVISIONS",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.003",
+      "body": "(a) It is the intent of the legislature to enhance opportunities for a person to obtain gainful employment after the person has:\n\n(1) been convicted of an offense; and\n\n(2) discharged the sentence for the offense.\n\n(b) This chapter shall be liberally construed to carry out the intent of the legislature.",
+      "summary": "(a) It is the intent of the legislature to enhance opportunities for a person to obtain gainful employment after the person has: (1) been convicted of an offense; and (2) discharged the sentence for the offense.",
+      "tags": [],
+      "word_count": 51
+    },
+    {
+      "uid": "stat-53.021",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.021",
+      "citation_short": "§53.021",
+      "section": "53.021",
+      "title": "Authority to Revoke, Suspend, or Deny License",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER B. INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.021",
+      "body": "(a) Subject to Section 53.0231, a licensing authority may suspend or revoke a license, disqualify a person from receiving a license, or deny to a person the opportunity to take a licensing examination on the grounds that the person has been convicted of:\n\n(1) an offense that directly relates to the duties and responsibilities of the licensed occupation;\n\n(2) an offense listed in Article 42A.054, Code of Criminal Procedure; or\n\n(3) a sexually violent offense, as defined by Article 62.001, Code of Criminal Procedure.\n\n(a-1) Subsection (a) does not apply to a person who has been convicted only of an offense punishable as a Class C misdemeanor unless:\n\n(1) the person is an applicant for or the holder of a license that authorizes the person to possess a firearm; and\n\n(2) the offense for which the person was convicted is a misdemeanor crime of domestic violence as that term is defined by 18 U.S.C. Section 921.\n\n(a-2) A licensing authority may revoke a license holder's license on the grounds of the license holder's imprisonment following a felony conviction.\n\n(b) A license holder's license shall be revoked on the license holder's imprisonment following a:\n\n(1) felony conviction for:\n\n(A) an offense that directly relates to the duties and responsibilities of the licensed occupation;\n\n(B) an offense listed in Article 42A.054, Code of Criminal Procedure; or\n\n(C) a sexually violent offense, as defined by Article 62.001, Code of Criminal Procedure;\n\n(2) felony community supervision revocation;\n\n(3) revocation of parole; or\n\n(4) revocation of mandatory supervision.\n\n(c) Except as provided by Subsections (d) and (e), notwithstanding any other law, a licensing authority may not consider a person to have been convicted of an offense for purposes of this section if, regardless of the statutory authorization:\n\n(1) the person entered a plea of guilty or nolo contendere;\n\n(2) the judge deferred further proceedings without entering an adjudication of guilt and placed the person under the supervision of the court or an officer under the supervision of the court; and\n\n(3) at the end of the period of supervision, the judge dismissed the proceedings and discharged the person.\n\n(d) A licensing authority may consider a person to have been convicted of an offense for purposes of this section regardless of whether the proceedings were dismissed and the person was discharged as described by Subsection (c) if:\n\n(1) the person was charged with:\n\n(A) any offense described by Article 62.001(5), Code of Criminal Procedure; or\n\n(B) an offense other than an offense described by Paragraph (A) if:\n\n(i) the person has not completed the period of supervision or the person completed the period of supervision less than five years before the date the person applied for the license; or\n\n(ii) a conviction for the offense would make the person ineligible for the license by operation of law; and\n\n(2) after consideration of the factors described by Sections 53.022 and 53.023(a), the licensing authority determines that:\n\n(A) the person may pose a continued threat to public safety; or\n\n(B) employment of the person in the licensed occupation would create a situation in which the person has an opportunity to repeat the prohibited conduct.\n\n(e) Subsection (c) does not apply if the person is an applicant for or the holder of a license that authorizes the person to provide:\n\n(1) law enforcement or public health, education, or safety services; or\n\n(2) financial services in an industry regulated by a person listed in Section 411.0765(b)(18), Government Code.\n\nActs 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.\n\nActs 2009, 81st Leg., R.S., Ch. 616 (H.B. 963), Sec. 3, eff. June 19, 2009.\n\nActs 2009, 81st Leg., R.S., Ch. 1148 (H.B. 2808), Sec. 1, eff. June 19, 2009.\n\nActs 2013, 83rd Leg., R.S., Ch. 938 (H.B. 1659), Sec. 2, eff. September 1, 2013.\n\nActs 2013, 83rd Leg., R.S., Ch. 1265 (H.B. 798), Sec. 1, eff. September 1, 2013.\n\nActs 2015, 84th Leg., R.S., Ch. 770 (H.B. 2299), Sec. 2.79, eff. January 1, 2017.\n\nActs 2015, 84th Leg., R.S., Ch. 1279 (S.B. 1902), Sec. 31, eff. September 1, 2015.\n\nActs 2019, 86th Leg., R.S., Ch. 765 (H.B. 1342), Sec. 5, eff. September 1, 2019.\n\nActs 2025, 89th Leg., R.S., Ch. 175 (S.B. 1080), Sec. 2, eff. May 27, 2025.",
+      "summary": "(a) Subject to Section 53.0231, a licensing authority may suspend or revoke a license, disqualify a person from receiving a license, or deny to a person the opportunity to take a licensing examination on the grounds that the person has been convicted of: (1) an offense that directly relates to the duties and responsibilities of the licensed occupation; (2) an offense listed in Article 42A.054, Code of Criminal Procedure; or (3) a sexually violent offense, as defined by Article 62.001, Code of Criminal Procedure.",
+      "tags": [
+        "Complaints, discipline & penalties",
+        "Licensing, sponsorship & renewal"
+      ],
+      "word_count": 710
+    },
+    {
+      "uid": "stat-53.0211",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.0211",
+      "citation_short": "§53.0211",
+      "section": "53.0211",
+      "title": "Licensing of Certain Applicants with Prior Criminal Convictions",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER B. INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.0211",
+      "body": "(a) This section does not apply to an applicant for a license that would allow the applicant to provide:\n\n(1) law enforcement services;\n\n(2) public health, education, or safety services; or\n\n(3) financial services in an industry regulated by the securities commissioner, the banking commissioner, the savings and mortgage lending commissioner, the consumer credit commissioner, or the credit union commissioner.\n\n(b) Notwithstanding any law other than Subsection (a) and unless the applicant has been convicted of an offense described by Section 53.021(a), a licensing authority shall issue to an otherwise qualified applicant who has been convicted of an offense:\n\n(1) the license for which the applicant applied; or\n\n(2) a provisional license under Subsection (b-1) valid for a term of 12 months.\n\n(b-1) A licensing authority may issue a provisional license to an applicant who has been convicted of an offense, including an applicant who:\n\n(1) is:\n\n(A) an inmate imprisoned in the Texas Department of Criminal Justice; or\n\n(B) a person released on parole or mandatory supervision and residing at a place described by Section 508.118 or 508.119, Government Code; and\n\n(2) is enrolled in or has completed an educational program offered by:\n\n(A) the Windham School District; or\n\n(B) an institution of higher education, as defined by Section 61.003, Education Code.\n\n(c) The term of a provisional license issued to an applicant who is an inmate imprisoned in the Texas Department of Criminal Justice begins on the date the applicant is released.\n\n(d) The licensing authority shall revoke a provisional license if the provisional license holder:\n\n(1) commits a new offense;\n\n(2) commits an act or omission that causes the person's community supervision, mandatory supervision, or parole to be revoked, if applicable; or\n\n(3) violates the law or rules governing the practice of the occupation for which the provisional license is issued.\n\n(e) The licensing authority shall issue the license for which the applicant originally applied to a provisional license holder on the expiration of the provisional license term if the provisional license holder does not engage in conduct described by Subsection (d).\n\n(f) If the licensing authority revokes a provisional license under Subsection (d), the provisional license holder is disqualified from receiving the license for which the applicant originally applied.\n\n(g) An applicant who is on community supervision, mandatory supervision, or parole and who is issued a provisional license under this section shall provide to the licensing authority the name and contact information of the probation or parole department to which the person reports. The licensing authority shall notify the probation or parole department that a provisional license has been issued. The probation or parole department shall notify the licensing authority if the person's community supervision, mandatory supervision, or parole supervision is revoked during the term of the provisional license.\n\n(h) On request of a licensing authority, the Texas Department of Criminal Justice shall provide to the licensing authority information regarding an applicant who is an inmate imprisoned in the Texas Department of Criminal Justice for purposes of determining the inmate's eligibility for a license.\n\nActs 2011, 82nd Leg., R.S., Ch. 1182 (H.B. 3453), Sec. 13, eff. September 1, 2011.\n\nActs 2025, 89th Leg., R.S., Ch. 175 (S.B. 1080), Sec. 3, eff. May 27, 2025.",
+      "summary": "(a) This section does not apply to an applicant for a license that would allow the applicant to provide: (1) law enforcement services; (2) public health, education, or safety services; or (3) financial services in an industry regulated by the securities commissioner, the banking commissioner, the savings and mortgage lending commissioner, the consumer credit commissioner, or the credit union commissioner.",
+      "tags": [
+        "Complaints, discipline & penalties",
+        "Contracts & promulgated forms",
+        "Licensing, sponsorship & renewal"
+      ],
+      "word_count": 538
+    },
+    {
+      "uid": "stat-53.022",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.022",
+      "citation_short": "§53.022",
+      "section": "53.022",
+      "title": "Factors in Determining Whether Conviction Directly Relates to Occupation",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER B. INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.022",
+      "body": "In determining whether a criminal conviction directly relates to the duties and responsibilities of a licensed occupation, the licensing authority shall consider each of the following factors:\n\n(1) the nature and seriousness of the crime;\n\n(2) the relationship of the crime to the purposes for requiring a license to engage in the occupation;\n\n(3) the extent to which a license might offer an opportunity to engage in further criminal activity of the same type as that in which the person previously had been involved;\n\n(4) the relationship of the crime to the ability or capacity required to perform the duties and discharge the responsibilities of the licensed occupation; and\n\n(5) any correlation between the elements of the crime and the duties and responsibilities of the licensed occupation.\n\nActs 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.\n\nActs 2019, 86th Leg., R.S., Ch. 765 (H.B. 1342), Sec. 6, eff. September 1, 2019.",
+      "summary": "In determining whether a criminal conviction directly relates to the duties and responsibilities of a licensed occupation, the licensing authority shall consider each of the following factors: (1) the nature and seriousness of the crime; (2) the relationship of the crime to the purposes for requiring a license to engage in the occupation; (3) the extent to which a license might offer an opportunity to engage in further criminal activity of the same type as that in which the person previously had been involved; (4) the relationship of the crime to the ability or capacity required to perform the duties and discharge the responsibilities of the licensed occupation; and (5) any correlation between the elements of the crime and the duties and responsibilities of the licensed occupation.",
+      "tags": [],
+      "word_count": 154
+    },
+    {
+      "uid": "stat-53.023",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.023",
+      "citation_short": "§53.023",
+      "section": "53.023",
+      "title": "Additional Factors for Licensing Authority to Consider After Determining Conviction Directly Relates to Occupation",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER B. INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.023",
+      "body": "(a) If a licensing authority determines under Section 53.022 that a criminal conviction directly relates to the duties and responsibilities of a licensed occupation, the licensing authority shall consider the following in determining whether to take an action authorized by Section 53.021:\n\n(1) the extent and nature of the person's past criminal activity;\n\n(2) the age of the person when the crime was committed;\n\n(3) the amount of time that has elapsed since the person's last criminal activity;\n\n(4) the conduct and work activity of the person before and after the criminal activity;\n\n(5) evidence of the person's rehabilitation or rehabilitative effort while incarcerated or after release;\n\n(6) evidence of the person's compliance with any conditions of community supervision, parole, or mandatory supervision; and\n\n(7) other evidence of the person's fitness, including letters of recommendation.\n\n(b) The applicant has the responsibility, to the extent possible, to obtain and provide to the licensing authority the recommendations described by Subsection (a)(7).\n\n(c) Repealed by Acts 2019, 86th Leg., R.S., Ch. 765 (H.B. 1342), Sec. 12, eff. September 1, 2019.\n\nActs 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.\n\nActs 2019, 86th Leg., R.S., Ch. 765 (H.B. 1342), Sec. 7, eff. September 1, 2019.\n\nActs 2019, 86th Leg., R.S., Ch. 765 (H.B. 1342), Sec. 8, eff. September 1, 2019.\n\nActs 2019, 86th Leg., R.S., Ch. 765 (H.B. 1342), Sec. 12, eff. September 1, 2019.",
+      "summary": "(a) If a licensing authority determines under Section 53.022 that a criminal conviction directly relates to the duties and responsibilities of a licensed occupation, the licensing authority shall consider the following in determining whether to take an action authorized by Section 53.021: (1) the extent and nature of the person's past criminal activity; (2) the age of the person when the crime was committed; (3) the amount of time that has elapsed since the person's last criminal activity; (4) the conduct and work activity of the person before and after the criminal activity; (5) evidence of the person's rehabilitation or rehabilitative effort while incarcerated or after release; (6) evidence of the person's compliance with any conditions of community supervision, parole, or mandatory supervision; and (7) other evidence of the person's fitness, including letters of recommendation.",
+      "tags": [
+        "Licensing, sponsorship & renewal"
+      ],
+      "word_count": 234
+    },
+    {
+      "uid": "stat-53.0231",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.0231",
+      "citation_short": "§53.0231",
+      "section": "53.0231",
+      "title": "Notice of Pending Denial of License",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER B. INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.0231",
+      "body": "(a) Notwithstanding any other law, a licensing authority may not deny a person a license or the opportunity to be examined for a license because of the person's prior conviction of an offense unless the licensing authority:\n\n(1) provides written notice to the person of the reason for the intended denial; and\n\n(2) allows the person not less than 30 days to submit any relevant information to the licensing authority.\n\n(b) A notice required under Subsection (a) must contain, as applicable:\n\n(1) a statement that the person is disqualified from receiving the license or being examined for the license because of the person's prior conviction of an offense specified in the notice; or\n\n(2) a statement that:\n\n(A) the final decision of the licensing authority to deny the person a license or the opportunity to be examined for the license will be based on the factors listed in Section 53.023(a); and\n\n(B) it is the person's responsibility to obtain and provide to the licensing authority evidence regarding the factors listed in Section 53.023(a).",
+      "summary": "(a) Notwithstanding any other law, a licensing authority may not deny a person a license or the opportunity to be examined for a license because of the person's prior conviction of an offense unless the licensing authority: (1) provides written notice to the person of the reason for the intended denial; and (2) allows the person not less than 30 days to submit any relevant information to the licensing authority.",
+      "tags": [
+        "Practice, procedure & deadlines"
+      ],
+      "word_count": 173
+    },
+    {
+      "uid": "stat-53.0232",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.0232",
+      "citation_short": "§53.0232",
+      "section": "53.0232",
+      "title": "Limitation Regarding Consideration of Certain Arrests",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER B. INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.0232",
+      "body": "For purposes of determining a person's fitness to perform the duties and discharge the responsibilities of the licensed occupation, a licensing authority may not consider an arrest that did not result in the person's conviction or placement on deferred adjudication community supervision.\n\nRedesignated from Occupations Code, Section 53.0231 by Acts 2021, 87th Leg., R.S., Ch. 915 (H.B. 3607), Sec. 21.001(61), eff. September 1, 2021.",
+      "summary": "For purposes of determining a person's fitness to perform the duties and discharge the responsibilities of the licensed occupation, a licensing authority may not consider an arrest that did not result in the person's conviction or placement on deferred adjudication community supervision.",
+      "tags": [],
+      "word_count": 64
+    },
+    {
+      "uid": "stat-53.024",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.024",
+      "citation_short": "§53.024",
+      "section": "53.024",
+      "title": "Proceedings Governed by Administrative Procedure Act",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER B. INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.024",
+      "body": "A proceeding before a licensing authority to establish factors required to be considered under this subchapter is governed by Chapter 2001, Government Code.\n\nActs 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.",
+      "summary": "A proceeding before a licensing authority to establish factors required to be considered under this subchapter is governed by Chapter 2001, Government Code. Acts 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.",
+      "tags": [],
+      "word_count": 35
+    },
+    {
+      "uid": "stat-53.025",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.025",
+      "citation_short": "§53.025",
+      "section": "53.025",
+      "title": "Guidelines",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER B. INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.025",
+      "body": "(a) Each licensing authority shall issue guidelines relating to the practice of the licensing authority under this chapter. The guidelines must state the reasons a particular crime is considered to relate to a particular license and any other criterion that affects the decisions of the licensing authority.\n\n(b) A state licensing authority that issues guidelines under this section shall file the guidelines with the secretary of state for publication in the Texas Register.\n\n(c) A local or county licensing authority that issues guidelines under this section shall post the guidelines at the courthouse for the county in which the licensing authority is located or publish the guidelines in a newspaper having countywide circulation in that county.\n\n(d) Amendments to the guidelines, if any, shall be issued annually.\n\nActs 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.",
+      "summary": "(a) Each licensing authority shall issue guidelines relating to the practice of the licensing authority under this chapter.",
+      "tags": [],
+      "word_count": 139
+    },
+    {
+      "uid": "stat-53.026",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.026",
+      "citation_short": "§53.026",
+      "section": "53.026",
+      "title": "Applicant Best Practices Guide",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER B. INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.026",
+      "body": "(a) The state auditor shall, in collaboration with licensing authorities, develop a guide of best practices for an applicant with a prior conviction to use when applying for a license. The state auditor shall publish the guide on the state auditor's Internet website.\n\n(b) A licensing authority shall include a link to the guide on the authority's Internet website and in each notice described by Section 53.051 and letter described by Section 53.104.",
+      "summary": "(a) The state auditor shall, in collaboration with licensing authorities, develop a guide of best practices for an applicant with a prior conviction to use when applying for a license.",
+      "tags": [
+        "Licensing, sponsorship & renewal"
+      ],
+      "word_count": 73
+    },
+    {
+      "uid": "stat-53.051",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.051",
+      "citation_short": "§53.051",
+      "section": "53.051",
+      "title": "Notice",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER C. NOTICE AND REVIEW OF SUSPENSION, REVOCATION, OR DENIAL OF LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.051",
+      "body": "A licensing authority that suspends or revokes a license or denies a person a license or the opportunity to be examined for a license because of the person's prior conviction of an offense shall notify the person in writing of:\n\n(1) the reason for the suspension, revocation, denial, or disqualification, including any factor considered under Section 53.022 or 53.023 that served as the basis for the suspension, revocation, denial, or disqualification;\n\n(2) the review procedure provided by Section 53.052; and\n\n(3) the earliest date the person may appeal the action of the licensing authority.\n\nActs 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.\n\nActs 2019, 86th Leg., R.S., Ch. 765 (H.B. 1342), Sec. 10, eff. September 1, 2019.",
+      "summary": "A licensing authority that suspends or revokes a license or denies a person a license or the opportunity to be examined for a license because of the person's prior conviction of an offense shall notify the person in writing of: (1) the reason for the suspension, revocation, denial, or disqualification, including any factor considered under Section 53.022 or 53.023 that served as the basis for the suspension, revocation, denial, or disqualification; (2) the review procedure provided by Section 53.052; and (3) the earliest date the person may appeal the action of the licensing authority.",
+      "tags": [
+        "Complaints, discipline & penalties",
+        "Practice, procedure & deadlines"
+      ],
+      "word_count": 121
+    },
+    {
+      "uid": "stat-53.052",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.052",
+      "citation_short": "§53.052",
+      "section": "53.052",
+      "title": "Judicial Review",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER C. NOTICE AND REVIEW OF SUSPENSION, REVOCATION, OR DENIAL OF LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.052",
+      "body": "(a) A person whose license has been suspended or revoked or who has been denied a license or the opportunity to take an examination under Section 53.021 and who has exhausted the person's administrative appeals may file an action in the district court in the county in which the licensing authority is located for review of the evidence presented to the licensing authority and the decision of the licensing authority.\n\n(b) The petition for an action under Subsection (a) must be filed not later than the 30th day after the date the licensing authority's decision is final and appealable.\n\nActs 1999, 76th Leg., ch. 388, Sec. 1, eff. Sept. 1, 1999.",
+      "summary": "(a) A person whose license has been suspended or revoked or who has been denied a license or the opportunity to take an examination under Section 53.021 and who has exhausted the person's administrative appeals may file an action in the district court in the county in which the licensing authority is located for review of the evidence presented to the licensing authority and the decision of the licensing authority.",
+      "tags": [
+        "Complaints, discipline & penalties"
+      ],
+      "word_count": 111
+    },
+    {
+      "uid": "stat-53.101",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.101",
+      "citation_short": "§53.101",
+      "section": "53.101",
+      "title": "Definitions",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER D. PRELIMINARY EVALUATION OF LICENSE ELIGIBILITY",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.101",
+      "body": "In this subchapter:\n\n(1) \"License\" means a license, certificate, registration, permit, or other authorization that:\n\n(A) is issued by a licensing authority; and\n\n(B) a person must obtain to practice or engage in a particular business, occupation, or profession.\n\n(2) \"Licensing authority\" means a department, commission, board, office, or other agency of the state that issues a license.",
+      "summary": "In this subchapter: (1) \"License\" means a license, certificate, registration, permit, or other authorization that: (A) is issued by a licensing authority; and (B) a person must obtain to practice or engage in a particular business, occupation, or profession.",
+      "tags": [
+        "Licensing, sponsorship & renewal"
+      ],
+      "word_count": 58
+    },
+    {
+      "uid": "stat-53.102",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.102",
+      "citation_short": "§53.102",
+      "section": "53.102",
+      "title": "Request for Criminal History Evaluation Letter",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER D. PRELIMINARY EVALUATION OF LICENSE ELIGIBILITY",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.102",
+      "body": "(a) A person may request a licensing authority to issue a criminal history evaluation letter regarding the person's eligibility for a license issued by that authority if the person:\n\n(1) is enrolled or planning to enroll in an educational program that prepares a person for an initial license or is planning to take an examination for an initial license; and\n\n(2) has reason to believe that the person is ineligible for the license due to a conviction or deferred adjudication for a felony or misdemeanor offense.\n\n(b) The request must state the basis for the person's potential ineligibility.",
+      "summary": "(a) A person may request a licensing authority to issue a criminal history evaluation letter regarding the person's eligibility for a license issued by that authority if the person: (1) is enrolled or planning to enroll in an educational program that prepares a person for an initial license or is planning to take an examination for an initial license; and (2) has reason to believe that the person is ineligible for the license due to a conviction or deferred adjudication for a felony or misdemeanor offense.",
+      "tags": [],
+      "word_count": 98
+    },
+    {
+      "uid": "stat-53.103",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.103",
+      "citation_short": "§53.103",
+      "section": "53.103",
+      "title": "Authority to Investigate",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER D. PRELIMINARY EVALUATION OF LICENSE ELIGIBILITY",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.103",
+      "body": "A licensing authority has the same powers to investigate a request submitted under this subchapter and the requestor's eligibility that the authority has to investigate a person applying for a license.",
+      "summary": "A licensing authority has the same powers to investigate a request submitted under this subchapter and the requestor's eligibility that the authority has to investigate a person applying for a license.",
+      "tags": [],
+      "word_count": 31
+    },
+    {
+      "uid": "stat-53.104",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.104",
+      "citation_short": "§53.104",
+      "section": "53.104",
+      "title": "Determination of Eligibility; Letter",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER D. PRELIMINARY EVALUATION OF LICENSE ELIGIBILITY",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.104",
+      "body": "(a) If a licensing authority determines that a ground for ineligibility does not exist, the authority shall notify the requestor in writing of the authority's determination on each ground of potential ineligibility.\n\n(b) If a licensing authority determines that the requestor is ineligible for a license, the licensing authority shall issue a letter setting out each basis for potential ineligibility, including any factor considered under Section 53.022 or 53.023 that served as the basis for potential ineligibility, and the authority's determination as to eligibility. In the absence of new evidence known to but not disclosed by the requestor or not reasonably available to the licensing authority at the time the letter is issued, the authority's ruling on the request determines the requestor's eligibility with respect to the grounds for potential ineligibility set out in the letter.\n\n(c) A licensing authority must provide notice under Subsection (a) or issue a letter under Subsection (b) not later than the 90th day after the date the authority receives the request.\n\nActs 2019, 86th Leg., R.S., Ch. 765 (H.B. 1342), Sec. 11, eff. September 1, 2019.",
+      "summary": "(a) If a licensing authority determines that a ground for ineligibility does not exist, the authority shall notify the requestor in writing of the authority's determination on each ground of potential ineligibility.",
+      "tags": [
+        "Disclosures & required notices"
+      ],
+      "word_count": 182
+    },
+    {
+      "uid": "stat-53.105",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.105",
+      "citation_short": "§53.105",
+      "section": "53.105",
+      "title": "Fees",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER D. PRELIMINARY EVALUATION OF LICENSE ELIGIBILITY",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.105",
+      "body": "A licensing authority may charge a person requesting an evaluation under this subchapter a fee adopted by the authority. Fees adopted by a licensing authority under this subchapter must be in an amount sufficient to cover the cost of administering this subchapter.",
+      "summary": "A licensing authority may charge a person requesting an evaluation under this subchapter a fee adopted by the authority.",
+      "tags": [],
+      "word_count": 42
+    },
+    {
+      "uid": "stat-53.151",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.151",
+      "citation_short": "§53.151",
+      "section": "53.151",
+      "title": "Definitions",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER E. NOTICE OF POTENTIAL INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.151",
+      "body": "Notwithstanding Section 53.001, in this subchapter, \"licensing authority\" and \"occupational license\" have the meanings assigned to those terms by Section 58.001.",
+      "summary": "Notwithstanding Section 53.001, in this subchapter, \"licensing authority\" and \"occupational license\" have the meanings assigned to those terms by Section 58.001.",
+      "tags": [],
+      "word_count": 21
+    },
+    {
+      "uid": "stat-53.152",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.152",
+      "citation_short": "§53.152",
+      "section": "53.152",
+      "title": "Notice by Entities Providing Educational Programs",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER E. NOTICE OF POTENTIAL INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.152",
+      "body": "(a) An entity that provides an educational program to prepare an individual for issuance of an initial occupational license shall notify each applicant to and enrollee in the educational program of:\n\n(1) the potential ineligibility of an individual who has been convicted of an offense for issuance of an occupational license on completion of the educational program;\n\n(2) the current guidelines issued under Section 53.025 by any licensing authority that may issue an occupational license to an individual who completes the educational program;\n\n(3) any other state or local restriction or guideline used by a licensing authority described by Subdivision (2) to determine the eligibility of an individual who has been convicted of an offense for an occupational license issued by the licensing authority; and\n\n(4) the right to request a criminal history evaluation letter under Section 53.102.\n\n(b) The entity shall provide the notice required under Subsection (a) to each applicant and enrollee regardless of whether the applicant or enrollee has been convicted of an offense.",
+      "summary": "(a) An entity that provides an educational program to prepare an individual for issuance of an initial occupational license shall notify each applicant to and enrollee in the educational program of: (1) the potential ineligibility of an individual who has been convicted of an offense for issuance of an occupational license on completion of the educational program; (2) the current guidelines issued under Section 53.025 by any licensing authority that may issue an occupational license to an individual who completes the educational program; (3) any other state or local restriction or guideline used by a licensing authority described by Subdivision (2) to determine the eligibility of an individual who has been convicted of an offense for an occupational license issued by the licensing authority; and (4) the right to request a criminal history evaluation letter under Section 53.102.",
+      "tags": [
+        "Licensing, sponsorship & renewal"
+      ],
+      "word_count": 167
+    },
+    {
+      "uid": "stat-53.153",
+      "source_id": "oc53",
+      "source_name": "Tex. Occ. Code ch. 53",
+      "kind": "Statute",
+      "citation": "Tex. Occ. Code §53.153",
+      "citation_short": "§53.153",
+      "section": "53.153",
+      "title": "Refund and Ordered Payments",
+      "chapter": "53",
+      "chapter_title": "Consequences of Criminal Conviction",
+      "subchapter": "SUBCHAPTER E. NOTICE OF POTENTIAL INELIGIBILITY FOR LICENSE",
+      "url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.53.htm#53.153",
+      "body": "A licensing authority that determines that an entity regulated by the licensing authority has failed to provide the notice required by Section 53.152 to an individual entitled to receive the notice and that the individual's application for an occupational license for which the entity's educational program prepares the individual was denied because the individual has been convicted of an offense shall order the entity to:\n\n(1) refund the amount of any tuition paid by the individual to the entity; and\n\n(2) pay to the individual an amount equal to the total of the following, as applicable:\n\n(A) the amount of any application fees paid by the individual to the licensing authority; and\n\n(B) the amount of any examination fees paid by the individual to the licensing authority or an examination provider approved by the licensing authority.",
+      "summary": "A licensing authority that determines that an entity regulated by the licensing authority has failed to provide the notice required by Section 53.152 to an individual entitled to receive the notice and that the individual's application for an occupational license for which the entity's educational program prepares the individual was denied because the individual has been convicted of an offense shall order the entity to: (1) refund the amount of any tuition paid by the individual to the entity; and (2) pay to the individual an amount equal to the total of the following, as applicable: (A) the amount of any application fees paid by the individual to the licensing authority; and (B) the amount of any examination fees paid by the individual to the licensing authority or an examination provider approved by the licensing authority.",
+      "tags": [
+        "Commissions, fees & referrals",
+        "Education & continuing education"
+      ],
+      "word_count": 136
     }
   ]
 }
