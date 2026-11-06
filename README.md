@@ -208,6 +208,8 @@ trec_rules_explorer/
     ui.py                    # Tkinter interface, bookmarks, notes, export
   tools/
     build_library.py         # fetch + parse + write the snapshot
+    check_seo.py             # validate local landing-page metadata
+    check_live.py            # verify the deployed page, sitemap, and assets
   tests/
     test_engine.py
   docs/
