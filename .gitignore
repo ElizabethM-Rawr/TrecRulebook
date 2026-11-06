@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.scratch/
+bookmarks.local.json
+*.tmp
+build/
+dist/
+.build-venv/
+*.spec

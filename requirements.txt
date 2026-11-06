@@ -1,0 +1,2 @@
+# No third-party dependencies.
+# Tkinter ships with the standard Windows/macOS Python installers.
