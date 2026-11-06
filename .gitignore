@@ -4,6 +4,10 @@ __pycache__/
 bookmarks.local.json
 *.tmp
 build/
+build-*/
 dist/
+dist-*/
+release/
 .build-venv/
 *.spec
+trec_startup_error.log

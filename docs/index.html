@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TREC Rulebook — Search Texas Real Estate Commission Rules</title>
+  <meta name="description" content="Free Windows app to search 481 Texas Real Estate Commission rules and statutes, compare scenarios, copy citations, and open official sources.">
+  <meta name="keywords" content="TREC rules, Texas Real Estate Commission rules, Texas real estate laws, TRELA, TREC rule search, Texas real estate inspector rules, TREC timeshare rules, Texas real estate license law">
+  <meta name="author" content="ElizabethM-Rawr">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#123d49">
+  <link rel="canonical" href="https://elizabethm-rawr.github.io/TrecRulebook/">
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="sitemap.xml">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="TREC Rulebook">
+  <meta property="og:title" content="TREC Rulebook — Search Texas Real Estate Commission Rules &amp; Laws">
+  <meta property="og:description" content="Search 481 TREC rules and Texas statutes, compare scenarios, and cite official text. Free Windows desktop app; works offline.">
+  <meta property="og:url" content="https://elizabethm-rawr.github.io/TrecRulebook/">
+  <meta property="og:image" content="https://raw.githubusercontent.com/ElizabethM-Rawr/TrecRulebook/main/docs/search.png">
+  <meta property="og:image:alt" content="TREC Rulebook search screen showing highlighted Texas Real Estate Commission rule text">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="TREC Rulebook — Search Texas Real Estate Commission Rules &amp; Laws">
+  <meta name="twitter:description" content="Search 481 TREC rules and Texas statutes, compare scenarios, and cite official text. Free Windows app.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/ElizabethM-Rawr/TrecRulebook/main/docs/search.png">
+
+  <style>
+    :root {
+      --navy: #123d49;
+      --navy-deep: #0c2d36;
+      --teal: #1d6170;
+      --gold: #c49a3a;
+      --ink: #1d2b30;
+      --muted: #5d6a6f;
+      --paper: #f2eee4;
+      --surface: #fffdf8;
+      --border: #d8d0bf;
+      --chip: #e5efec;
+      --brick: #a6402d;
+      --max: 1120px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--teal); text-underline-offset: 3px; }
+    a:hover { color: var(--navy); }
+    img { max-width: 100%; height: auto; }
+    .wrap { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; }
+    .skip {
+      position: absolute; left: -9999px; top: 0; z-index: 20;
+      background: var(--gold); color: var(--navy-deep); padding: 10px 16px;
+    }
+    .skip:focus { left: 16px; top: 16px; }
+
+    header {
+      background: var(--navy);
+      color: #fff;
+      border-bottom: 3px solid var(--gold);
+    }
+    .nav {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; color: #fff; text-decoration: none; }
+    .seal {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--gold); color: var(--navy-deep);
+      display: grid; place-items: center;
+      font-size: 10px; font-weight: 800; letter-spacing: .06em;
+      border: 4px solid #fff2c9;
+    }
+    .brand strong { display: block; font-family: Georgia, "Times New Roman", serif; font-size: 22px; line-height: 1.1; }
+    .brand span { display: block; color: #c7d8da; font-size: 12px; margin-top: 3px; }
+    .nav-links { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+    .nav-links a { color: #e7eceb; text-decoration: none; font-size: 14px; }
+    .nav-links a:hover { color: #fff; }
+    .nav-download {
+      background: var(--gold); color: var(--navy-deep) !important;
+      font-weight: 700; padding: 9px 14px; border-radius: 6px;
+    }
+
+    .hero { padding: 62px 0 54px; }
+    .hero-grid { display: grid; grid-template-columns: 1.02fr .98fr; gap: 46px; align-items: center; }
+    .eyebrow {
+      display: inline-block; color: var(--brick); font-size: 12px;
+      font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(38px, 5.4vw, 62px);
+      line-height: 1.04; letter-spacing: -1.6px;
+      margin: 0 0 20px; color: var(--navy-deep);
+    }
+    .lede { font-size: 19px; line-height: 1.6; color: #39484d; max-width: 590px; margin: 0 0 26px; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      border-radius: 7px; padding: 13px 19px; font-weight: 700;
+      text-decoration: none; border: 1px solid transparent; font-size: 15px;
+    }
+    .button-primary { background: var(--navy); color: #fff; }
+    .button-primary:hover { background: var(--navy-deep); color: #fff; }
+    .button-secondary { background: transparent; color: var(--navy); border-color: #b9ae9a; }
+    .button-secondary:hover { background: var(--surface); color: var(--navy); }
+    .fine { margin-top: 12px; color: var(--muted); font-size: 13px; }
+    .hero-shot {
+      margin: 0; background: var(--surface); border: 1px solid var(--border);
+      padding: 10px; border-radius: 10px;
+      box-shadow: 0 24px 55px rgba(18,61,73,.18);
+      transform: rotate(1.1deg);
+    }
+    .hero-shot img { display: block; border-radius: 5px; border: 1px solid #e4ddcf; }
+    .hero-shot figcaption { color: var(--muted); font-size: 11px; padding: 8px 3px 0; }
+
+    .trustbar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .trustbar .wrap {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+      padding: 22px 0;
+    }
+    .stat b { display: block; font-family: Georgia, serif; font-size: 28px; color: var(--navy); line-height: 1.1; }
+    .stat span { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+    section { padding: 72px 0; }
+    .section-head { max-width: 760px; margin-bottom: 34px; }
+    h2 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(30px, 3.8vw, 44px);
+      line-height: 1.12; letter-spacing: -.8px;
+      color: var(--navy-deep); margin: 0 0 12px;
+    }
+    .section-head p { color: var(--muted); font-size: 17px; margin: 0; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; padding: 24px;
+    }
+    .card .icon {
+      width: 38px; height: 38px; border-radius: 7px;
+      display: grid; place-items: center; margin-bottom: 15px;
+      background: var(--chip); color: var(--teal); font-weight: 800;
+      font-family: Georgia, serif; font-size: 19px;
+    }
+    .card h3 { margin: 0 0 8px; font-size: 18px; color: var(--navy); }
+    .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .split { display: grid; grid-template-columns: 1.04fr .96fr; gap: 44px; align-items: center; }
+    .split.reverse .copy { order: 2; }
+    .split.reverse .visual { order: 1; }
+    .copy h2 { margin-top: 0; }
+    .copy p { color: #405055; font-size: 16px; }
+    .checklist { list-style: none; padding: 0; margin: 20px 0 0; }
+    .checklist li { position: relative; padding-left: 26px; margin: 10px 0; color: #37474c; }
+    .checklist li::before {
+      content: "✓"; position: absolute; left: 0; top: 0;
+      color: var(--teal); font-weight: 800;
+    }
+    .visual {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 9px; box-shadow: 0 14px 34px rgba(18,61,73,.10);
+    }
+    .visual img { display: block; border-radius: 4px; border: 1px solid #e4ddcf; }
+
+    .coverage {
+      background: var(--navy); color: #fff;
+    }
+    .coverage h2 { color: #fff; }
+    .coverage .section-head p { color: #c9d8da; }
+    .coverage-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #315a63; border: 1px solid #315a63; }
+    .coverage-item { background: var(--navy-deep); padding: 22px; }
+    .coverage-item b { display: block; font-family: Georgia, serif; font-size: 30px; color: #f1d48a; line-height: 1.1; }
+    .coverage-item span { display: block; color: #c9d8da; font-size: 12px; margin-top: 4px; }
+    .coverage-note { color: #c9d8da; font-size: 13px; margin: 16px 0 0; }
+
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; counter-reset: step; }
+    .step { padding: 0 4px; }
+    .step::before {
+      counter-increment: step; content: counter(step, decimal-leading-zero);
+      display: block; color: var(--gold); font-family: Georgia, serif;
+      font-size: 27px; line-height: 1; margin-bottom: 10px;
+    }
+    .step h3 { margin: 0 0 6px; color: var(--navy); font-size: 17px; }
+    .step p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .faq { max-width: 850px; }
+    details {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 7px; margin: 10px 0; padding: 0 18px;
+    }
+    summary {
+      cursor: pointer; font-weight: 700; color: var(--navy);
+      padding: 15px 0; font-size: 15px;
+    }
+    details p { margin: 0 0 16px; color: #45555a; font-size: 14px; }
+
+    .download {
+      background: var(--surface); border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .download-box {
+      display: grid; grid-template-columns: 1fr auto; gap: 30px; align-items: center;
+      background: var(--navy); color: #fff; border-radius: 10px;
+      padding: 34px 36px; border: 1px solid #2c5964;
+    }
+    .download-box h2 { color: #fff; margin: 0 0 8px; }
+    .download-box p { margin: 0; color: #c9d8da; font-size: 14px; max-width: 600px; }
+    .download-box .button-primary { background: var(--gold); color: var(--navy-deep); }
+    .download-box .button-primary:hover { background: #d8b45a; color: var(--navy-deep); }
+    .download-box .button-secondary { color: #e7eceb; border-color: #64838a; }
+    .download-box .fine { color: #aac3c7; margin: 8px 0 0; }
+
+    footer { padding: 34px 0 46px; color: var(--muted); font-size: 13px; }
+    .footer-grid { display: flex; justify-content: space-between; gap: 28px; flex-wrap: wrap; }
+    footer a { color: var(--teal); }
+    .disclaimer { max-width: 760px; font-size: 12px; color: #6b7478; margin-top: 18px; }
+
+    @media (max-width: 900px) {
+      .hero-grid, .split { grid-template-columns: 1fr; }
+      .split.reverse .copy { order: 1; }
+      .split.reverse .visual { order: 2; }
+      .hero-shot { transform: none; }
+      .cards, .steps { grid-template-columns: 1fr; }
+      .coverage-grid { grid-template-columns: repeat(2, 1fr); }
+      .nav-links a:not(.nav-download) { display: none; }
+      .download-box { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .wrap { width: min(var(--max), calc(100% - 26px)); }
+      .hero { padding-top: 42px; }
+      .trustbar .wrap { grid-template-columns: repeat(2, 1fr); }
+      .coverage-grid { grid-template-columns: 1fr; }
+      h1 { letter-spacing: -1px; }
+      .download-box { padding: 26px 22px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .hero-shot { transform: none; }
+    }
+  </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "TREC Rulebook",
+    "alternateName": "Texas Real Estate Commission Rulebook",
+    "description": "A free Windows desktop app for searching 481 Texas Real Estate Commission rules and Texas statutes, comparing scenarios, copying citations, and opening official sources.",
+    "url": "https://elizabethm-rawr.github.io/TrecRulebook/",
+    "downloadUrl": "https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest",
+    "codeRepository": "https://github.com/ElizabethM-Rawr/TrecRulebook",
+    "applicationCategory": "BusinessApplication",
+    "applicationSubCategory": "Legal research",
+    "operatingSystem": "Windows 10, Windows 11",
+    "softwareVersion": "1.0.0",
+    "datePublished": "2026-11-06",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "featureList": [
+      "Full-text search across TREC rules and Texas statutes",
+      "Side-by-side scenario comparison",
+      "Copy-ready legal citations",
+      "Official source links",
+      "Bookmarks and local notes",
+      "Offline desktop access"
+    ],
+    "screenshot": [
+      "https://raw.githubusercontent.com/ElizabethM-Rawr/TrecRulebook/main/docs/search.png",
+      "https://raw.githubusercontent.com/ElizabethM-Rawr/TrecRulebook/main/docs/compare.png"
+    ],
+    "author": { "@type": "Person", "name": "ElizabethM-Rawr" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is TREC Rulebook?",
+        "acceptedAnswer": { "@type": "Answer", "text": "TREC Rulebook is a free Windows desktop app that lets you search Texas Real Estate Commission rules and the statutes TREC links from its Rules and Laws page. It includes full-text search, citations, official source links, and side-by-side scenario comparison." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it include Texas real estate laws, not just TREC rules?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. It includes 205 TREC rule sections plus 276 sections from the Real Estate License Act (Occupations Code chapter 1101), the Inspector Act (chapter 1102), and the Timeshare Act (Property Code chapter 221)." }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I compare two scenarios?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Paste two fact patterns into the Compare Scenarios tab. The app retrieves the authorities each scenario raises, shows shared and unique issues, and produces a brief with citations and requirement-style sentences to verify." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is TREC Rulebook free?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. The app is free and open source. Download the Windows build from GitHub Releases; no account is required." }
+      },
+      {
+        "@type": "Question",
+        "name": "Does TREC Rulebook work offline?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. The rules and statutes are bundled with the app. Search, comparison, bookmarks, and notes work without a network connection. Official source links open in your browser when you choose them." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is TREC Rulebook legal advice?",
+        "acceptedAnswer": { "@type": "Answer", "text": "No. It is an educational research aid. The Texas Secretary of State maintains the official rule text and the Legislature maintains the statutes. Verify every citation against the official source before relying on it." }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="/TrecRulebook/" aria-label="TREC Rulebook home">
+        <span class="seal" aria-hidden="true">TREC</span>
+        <span>
+          <strong>TREC Rulebook</strong>
+          <span>Texas Real Estate Commission rules &amp; statutes</span>
+        </span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#coverage">Coverage</a>
+        <a href="#faq">FAQ</a>
+        <a class="nav-download" href="https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest">Download</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">Built for Texas real estate research</span>
+          <h1>Search TREC rules and Texas real estate laws in seconds.</h1>
+          <p class="lede">
+            A free Windows desktop app for the Texas Real Estate Commission rules
+            and the statutes behind them. Find a section, read the full text,
+            compare two scenarios, and copy a citation without losing your place.
+          </p>
+          <div class="cta-row">
+            <a class="button button-primary" href="https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest">
+              Download for Windows
+            </a>
+            <a class="button button-secondary" href="https://github.com/ElizabethM-Rawr/TrecRulebook">
+              View source on GitHub
+            </a>
+          </div>
+          <p class="fine">Free · Windows 10/11 · No account · Works offline</p>
+        </div>
+        <figure class="hero-shot">
+          <img src="search.png" width="1336" height="919" alt="TREC Rulebook search results for advertising team name, with highlighted text from 22 TAC §535.154">
+          <figcaption>Search 481 rule and statutory sections, with query terms highlighted in the full text.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <div class="trustbar" aria-label="Library coverage">
+      <div class="wrap">
+        <div class="stat"><b>481</b><span>searchable sections</span></div>
+        <div class="stat"><b>205</b><span>TREC rule sections</span></div>
+        <div class="stat"><b>276</b><span>statutory sections</span></div>
+        <div class="stat"><b>3</b><span>TREC-linked statutes</span></div>
+      </div>
+    </div>
+
+    <section id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Built for the questions that slow you down</h2>
+          <p>Whether you are checking an advertising rule, a disclosure deadline, or an inspector’s dual-capacity limit, the answer should not require five browser tabs.</p>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <div class="icon" aria-hidden="true">§</div>
+            <h3>Find the section, not just a page</h3>
+            <p>Full-text search with BM25 ranking, chapter filters, exact citation lookup, and highlighted matches. Search “trust money,” “IABS,” or “535.155” and get the section itself.</p>
+          </article>
+          <article class="card">
+            <div class="icon" aria-hidden="true">↔</div>
+            <h3>Compare two fact patterns</h3>
+            <p>Paste Scenario A and Scenario B. The app shows shared issues, unique issues, the authorities each one raises, and requirement-style sentences worth checking.</p>
+          </article>
+          <article class="card">
+            <div class="icon" aria-hidden="true">↗</div>
+            <h3>Cite it and verify it</h3>
+            <p>Copy a citation or the full section, save a bookmark, add a note, and open the official TREC or Texas Legislature source in one click.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap split">
+        <div class="copy">
+          <span class="eyebrow">Search that respects the text</span>
+          <h2>Every rule. Every linked statute. One index.</h2>
+          <p>
+            TREC Rulebook bundles the TREC rules page and the three statutes TREC
+            links from its Rules and Laws page. The app reads the full section,
+            preserves the citation, and keeps the official source one click away.
+          </p>
+          <ul class="checklist">
+            <li>Search by phrase, section number, or issue</li>
+            <li>Filter to TREC rules, statutes, or a specific chapter</li>
+            <li>See query terms highlighted in the full text</li>
+            <li>Copy citation or section text for a memo or email</li>
+            <li>Bookmark sections and keep local notes</li>
+          </ul>
+        </div>
+        <div class="visual">
+          <img src="search.png" width="1336" height="919" loading="lazy" alt="TREC Rulebook detail view with highlighted search terms and official source link">
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap split reverse">
+        <div class="copy">
+          <span class="eyebrow">Scenario comparison</span>
+          <h2>See where two fact patterns diverge.</h2>
+          <p>
+            A client asks about advertising a team name. Another asks about an
+            inspector repairing a defect. The rules that matter are not the same.
+            Paste both scenarios and get a research brief that separates shared
+            issues from scenario-specific authorities.
+          </p>
+          <ul class="checklist">
+            <li>Recognized issue lenses for advertising, trust funds, inspections, conflicts, and more</li>
+            <li>Shared and unique authorities, with relative match scores</li>
+            <li>Requirement-style sentences to verify against the official text</li>
+            <li>Export the brief as Markdown</li>
+          </ul>
+        </div>
+        <div class="visual">
+          <img src="compare.png" width="1336" height="919" loading="lazy" alt="TREC Rulebook scenario comparison brief showing shared and unique authorities for two fact patterns">
+        </div>
+      </div>
+    </section>
+
+    <section class="coverage" id="coverage">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>What is inside the library</h2>
+          <p>Built from the public TREC rules page and the statutes linked from TREC’s Rules and Laws page. Snapshot: November 5, 2026.</p>
+        </div>
+        <div class="coverage-grid">
+          <div class="coverage-item"><b>205</b><span>TREC rule sections · 22 TAC chapters 531–543</span></div>
+          <div class="coverage-item"><b>164</b><span>Real Estate License Act · Tex. Occ. Code ch. 1101</span></div>
+          <div class="coverage-item"><b>50</b><span>Real Estate Inspectors · Tex. Occ. Code ch. 1102</span></div>
+          <div class="coverage-item"><b>62</b><span>Timeshare Plans · Tex. Prop. Code ch. 221</span></div>
+        </div>
+        <p class="coverage-note">
+          The library is a research snapshot, not an official reporter. Verify current text at the
+          <a href="https://www.trec.texas.gov/agency-information/rules-and-laws/trec-rules" style="color:#f1d48a">TREC rules page</a>
+          and the
+          <a href="https://statutes.capitol.texas.gov/" style="color:#f1d48a">Texas Constitution and Statutes</a>.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <h2>From question to citation in three steps</h2>
+          <p>No account, no setup wizard, no cloud upload.</p>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <h3>Download and open</h3>
+            <p>Use the portable Windows ZIP or the single EXE from GitHub Releases. The library is already bundled.</p>
+          </article>
+          <article class="step">
+            <h3>Search or compare</h3>
+            <p>Type a phrase or section number, or paste two scenarios into the comparison tab.</p>
+          </article>
+          <article class="step">
+            <h3>Read, cite, verify</h3>
+            <p>Read the full text, copy the citation, save a note, and open the official source to confirm.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="wrap faq">
+        <div class="section-head">
+          <h2>TREC Rulebook FAQ</h2>
+          <p>Common questions about the app, the library, and the limits of the research aid.</p>
+        </div>
+        <details open>
+          <summary>What is TREC Rulebook?</summary>
+          <p>TREC Rulebook is a free Windows desktop app for searching Texas Real Estate Commission rules and the statutes TREC links from its Rules and Laws page. It includes full-text search, citations, official source links, bookmarks, notes, and side-by-side scenario comparison.</p>
+        </details>
+        <details>
+          <summary>Does it include Texas real estate laws, not just TREC rules?</summary>
+          <p>Yes. It includes 205 TREC rule sections plus 276 sections from the Real Estate License Act (Occupations Code chapter 1101), the Inspector Act (chapter 1102), and the Timeshare Act (Property Code chapter 221).</p>
+        </details>
+        <details>
+          <summary>Can I compare two scenarios?</summary>
+          <p>Yes. Paste two fact patterns into the Compare Scenarios tab. The app retrieves the authorities each scenario raises, shows shared and unique issues, and produces a brief with citations and requirement-style sentences to verify.</p>
+        </details>
+        <details>
+          <summary>Is TREC Rulebook free?</summary>
+          <p>Yes. The app is free and open source. Download the Windows build from GitHub Releases; no account is required.</p>
+        </details>
+        <details>
+          <summary>Does it work offline?</summary>
+          <p>Yes. The rules and statutes are bundled with the app. Search, comparison, bookmarks, and notes work without a network connection. Official source links open in your browser when you choose them.</p>
+        </details>
+        <details>
+          <summary>Is TREC Rulebook legal advice?</summary>
+          <p>No. It is an educational research aid. The Texas Secretary of State maintains the official rule text and the Legislature maintains the statutes. Verify every citation against the official source before relying on it.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="download" id="download">
+      <div class="wrap">
+        <div class="download-box">
+          <div>
+            <h2>Download TREC Rulebook</h2>
+            <p>Free for Windows 10 and 11. The portable ZIP is recommended; the single EXE is the smallest download.</p>
+            <p class="fine">No installer · No account · Library included · v1.0.0</p>
+          </div>
+          <div class="cta-row">
+            <a class="button button-primary" href="https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest">
+              Get the latest release
+            </a>
+            <a class="button button-secondary" href="https://github.com/ElizabethM-Rawr/TrecRulebook">
+              GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <strong>TREC Rulebook</strong><br>
+          Searchable Texas Real Estate Commission rules &amp; laws.<br>
+          <a href="https://github.com/ElizabethM-Rawr/TrecRulebook">GitHub repository</a> ·
+          <a href="https://github.com/ElizabethM-Rawr/TrecRulebook/releases">Releases</a> ·
+          <a href="https://github.com/ElizabethM-Rawr/TrecRulebook/blob/main/README.md">Documentation</a>
+        </div>
+        <div>
+          <strong>Official sources</strong><br>
+          <a href="https://www.trec.texas.gov/agency-information/rules-and-laws/trec-rules">TREC Rules</a><br>
+          <a href="https://statutes.capitol.texas.gov/">Texas Constitution and Statutes</a>
+        </div>
+      </div>
+      <p class="disclaimer">
+        Educational research aid only, not legal advice. The Texas Secretary of State maintains the official text of agency rules;
+        the Texas Legislature maintains the official statutes. Verify every citation against the official source before relying on it.
+        TREC Rulebook is not affiliated with or endorsed by the Texas Real Estate Commission.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

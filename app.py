@@ -15,6 +15,7 @@ import argparse
 import ctypes
 import os
 import sys
+import traceback
 import tkinter as tk
 from pathlib import Path
 from tkinter import messagebox
@@ -39,6 +40,19 @@ def enable_dpi_awareness() -> None:
             ctypes.windll.user32.SetProcessDPIAware()
         except Exception:
             pass
+
+
+def _log_startup_error(exc: BaseException) -> None:
+    """Keep a traceback even when a windowed build hides stderr."""
+    details = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+    if sys.stderr is not None:
+        print(details, file=sys.stderr)
+    for folder in (Path.cwd(), Path(sys.executable).resolve().parent):
+        try:
+            (folder / "trec_startup_error.log").write_text(details, encoding="utf-8")
+            break
+        except OSError:
+            continue
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -76,6 +90,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         TrecApp(root, data_path)
     except Exception as exc:  # pragma: no cover - startup failure UI path
+        _log_startup_error(exc)
         root.withdraw()
         messagebox.showerror("Could not start TREC Rulebook", str(exc), parent=root)
         root.destroy()
@@ -86,7 +101,8 @@ def main(argv: list[str] | None = None) -> int:
         root.update()
         root.after(250, root.destroy)
         root.mainloop()
-        print("TREC Rulebook smoke test: OK")
+        if sys.stdout is not None:
+            print("TREC Rulebook smoke test: OK")
         return 0
 
     root.mainloop()

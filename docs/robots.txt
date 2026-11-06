@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://elizabethm-rawr.github.io/TrecRulebook/sitemap.xml

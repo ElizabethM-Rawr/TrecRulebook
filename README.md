@@ -1,6 +1,13 @@
-# TREC Rulebook
+# TREC Rulebook — Searchable Texas Real Estate Commission Rules & Laws
 
-A local desktop research aid for the **Texas Real Estate Commission** rules and the statutes TREC links from its Rules and Laws page.
+A free Windows desktop app for searching **Texas Real Estate Commission (TREC) rules** and the **Texas real estate statutes** TREC links from its Rules and Laws page. Find a rule by keyword or section number, compare two fact patterns, copy a citation, and jump to the official source.
+
+[**Download the latest Windows release**](https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest) · [**Browse the project site**](https://elizabethm-rawr.github.io/TrecRulebook/) · [**View the source**](https://github.com/ElizabethM-Rawr/TrecRulebook)
+
+[![Latest release](https://img.shields.io/github/v/release/ElizabethM-Rawr/TrecRulebook?label=release)](https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest)
+[![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-123d49)](https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-1d6170)](https://www.python.org/)
+[![No dependencies](https://img.shields.io/badge/dependencies-none-c49a3a)](requirements.txt)
 
 It gives you three things in one window:
 
@@ -15,6 +22,30 @@ Everything runs offline after the library is downloaded. There are no API keys, 
 ![Scenario comparison](docs/compare.png)
 
 > Educational research aid only, not legal advice. The Texas Secretary of State maintains the official text of agency rules; the Texas Legislature maintains the official statutes. Verify every citation against the official source before relying on it.
+
+---
+
+## Download for Windows
+
+Get the newest build from **[GitHub Releases](https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest)**:
+
+- **Portable ZIP** — recommended; unzip and run `TRECRulebook.exe`. No installer.
+- **Single EXE** — one file; Windows may show a SmartScreen warning for a new unsigned build.
+
+The app is free, requires no account, and includes the full 481-section library.
+
+## What is TREC Rulebook?
+
+TREC Rulebook is a local research tool for Texas real estate professionals, inspectors, educators, and anyone who needs to check the **Texas Administrative Code** rules for the Texas Real Estate Commission. It is designed for questions such as:
+
+- What does TREC require for advertising a team name or assumed business name?
+- How must a broker handle trust money and earnest money?
+- What are the disclosure requirements for the Information About Brokerage Services (IABS) notice?
+- When may a real estate inspector not act in a dual capacity or perform repairs?
+- What does the Texas Timeshare Act require for registration, escrow, or cancellation?
+- Which rule or statute applies to a particular fact pattern?
+
+The search covers the TREC rules page (22 TAC chapters 531–543), the **Real Estate License Act** (Texas Occupations Code chapter 1101), the **Inspector Act** (chapter 1102), and the **Timeshare Act** (Texas Property Code chapter 221).
 
 ---
 
@@ -180,6 +211,9 @@ trec_rules_explorer/
   tests/
     test_engine.py
   docs/
+    index.html               # SEO landing page for GitHub Pages
+    robots.txt
+    sitemap.xml
     search.png
     compare.png
   README.md
@@ -194,6 +228,38 @@ trec_rules_explorer/
 - **FTS5** handles search ranking; scenario retrieval adds issue vocabulary, IDF-weighted coverage, and short issue lenses so a long standards-of-practice section does not bury a decisive statute.
 - **Citations** are preserved on every section. The detail view always links to the official source.
 - **Bookmarks** are plain JSON, portable between machines.
+
+---
+
+## Frequently asked questions
+
+### What is TREC Rulebook?
+
+TREC Rulebook is a free, local Windows app for searching the Texas Real Estate Commission rules and the statutes TREC links from its Rules and Laws page. It combines full-text search, citations, official source links, bookmarks, notes, and side-by-side scenario comparison.
+
+### Does it include Texas real estate laws, not just TREC rules?
+
+Yes. It includes the Real Estate License Act (Texas Occupations Code chapter 1101), the Inspector Act (chapter 1102), and the Timeshare Act (Texas Property Code chapter 221), in addition to 205 TREC rule sections.
+
+### Can I compare two scenarios?
+
+Yes. Paste Scenario A and Scenario B into the Compare Scenarios tab. The app retrieves authorities for each, separates shared issues from unique issues, and produces a brief with citations and requirement-style sentences to verify.
+
+### Is it free?
+
+Yes. The app is free and the source is public. Download the Windows build from GitHub Releases; no account is required.
+
+### Does it work offline?
+
+Yes. The rules and statutes are bundled. Search, comparison, bookmarks, and notes work without a network connection. Official source links open in your browser when you choose them.
+
+### Is this legal advice?
+
+No. It is an educational research aid. The Texas Secretary of State maintains the official rule text and the Texas Legislature maintains the statutes. Verify every citation against the official source before relying on it.
+
+### Which TREC rule chapters are included?
+
+The library includes 22 TAC chapters 531 (Canons of Professional Ethics and Conduct), 533 (Practice and Procedure), 534 (General Administration), 535 (General Provisions), 537 (Professional Agreements and Standard Contracts), 541 (Occupations Code chapter 53), and 543 (Timeshare Act).
 
 ---
 

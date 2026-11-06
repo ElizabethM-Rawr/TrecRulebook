@@ -66,7 +66,6 @@ echo Running PyInstaller...
 %PY% -m PyInstaller ^
     %MODE_FLAG% ^
     --noconfirm ^
-    --clean ^
     --noupx ^
     --windowed ^
     --name "%APP_NAME%" ^
