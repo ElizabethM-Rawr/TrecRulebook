@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ctypes
 import json
 import os
 import queue
@@ -30,23 +31,112 @@ from .engine import (
 # Palette and type
 # ---------------------------------------------------------------------------
 
-BG = "#f2eee4"
-SURFACE = "#fffdf8"
-SURFACE_ALT = "#faf6ec"
-INK = "#1d2b30"
-MUTED = "#687277"
-FAINT = "#8b938f"
-NAVY = "#123d49"
-NAVY_DARK = "#0c2d36"
-TEAL = "#1d6170"
-BRICK = "#a6402d"
-GOLD = "#c49a3a"
-BORDER = "#d8d0bf"
-SOFT = "#e9e3d5"
-CHIP = "#e5efec"
-CHIP_TEXT = "#215b60"
-HIT = "#ffe6a1"
-WHITE = "#ffffff"
+LIGHT_THEME = "light"
+DARK_THEME = "dark"
+
+LIGHT_PALETTE = {
+    "BG": "#f2eee4",
+    "SURFACE": "#fffdf8",
+    "SURFACE_ALT": "#faf6ec",
+    "INK": "#1d2b30",
+    "MUTED": "#687277",
+    "FAINT": "#8b938f",
+    "NAVY": "#123d49",
+    "NAVY_DARK": "#0c2d36",
+    "TEAL": "#1d6170",
+    "BRICK": "#a6402d",
+    "GOLD": "#c49a3a",
+    "BORDER": "#d8d0bf",
+    "SOFT": "#e9e3d5",
+    "CHIP": "#e5efec",
+    "CHIP_TEXT": "#215b60",
+    "HIT": "#ffe6a1",
+    "WHITE": "#ffffff",
+    "ACCENT_FG": "#ffffff",
+    "AI_FG": "#1d2b30",
+    "HEADER_SUBTITLE": "#b9cdd0",
+    "HEADER_BORDER": "#2d5c66",
+    "HEADER_CHIP_TEXT": "#d8e4e3",
+    "HEADER_LINK": "#e5d19a",
+    "STATUS_BG": "#e9e3d5",
+    "STATUS_TEXT": "#8a7a58",
+    "RULE_TEXT": "#1c5969",
+    "STATUTE_TEXT": "#75501f",
+    "RELATED_BADGE_BG": "#f1e4e0",
+    "RELATED_BADGE_FG": "#7c3f2f",
+    "STATUTE_BADGE_BG": "#f3e6d1",
+    "STATUTE_BADGE_FG": "#7c541f",
+    "ONLY_B_TEXT": "#7a541c",
+    "SHARED_TEXT": "#174f59",
+    "ONLY_A_TEXT": "#8d3b2a",
+    "WARN_BG": "#f7edda",
+    "WARN_FG": "#7b5a2a",
+    "WARN_FG2": "#6d5528",
+    "SEV_MED": "#8a5a1f",
+    "DISABLED_ACCENT_BG": "#a9b8b8",
+    "DISABLED_ACCENT_FG": "#f0f0e8",
+    "AI_ACTIVE": "#a9822c",
+    "AI_DISABLED_BG": "#d8c9a1",
+    "AI_DISABLED_FG": "#6f6753",
+}
+
+DARK_PALETTE = {
+    "BG": "#12191c",
+    "SURFACE": "#1b2428",
+    "SURFACE_ALT": "#222d31",
+    "INK": "#e8eef0",
+    "MUTED": "#a6b2b6",
+    "FAINT": "#7c898d",
+    "NAVY": "#0b1417",
+    "NAVY_DARK": "#070f12",
+    "TEAL": "#6cc7d4",
+    "BRICK": "#e57a63",
+    "GOLD": "#d8b45c",
+    "BORDER": "#34454a",
+    "SOFT": "#26353a",
+    "CHIP": "#203638",
+    "CHIP_TEXT": "#a9dce2",
+    "HIT": "#5a4a20",
+    "WHITE": "#f5f8f9",
+    "ACCENT_FG": "#081416",
+    "AI_FG": "#1b1608",
+    "HEADER_SUBTITLE": "#9fb4b9",
+    "HEADER_BORDER": "#2b4a50",
+    "HEADER_CHIP_TEXT": "#cfe1e4",
+    "HEADER_LINK": "#e8c98a",
+    "STATUS_BG": "#0e1518",
+    "STATUS_TEXT": "#b9a77c",
+    "RULE_TEXT": "#8fd3df",
+    "STATUTE_TEXT": "#e3c07a",
+    "RELATED_BADGE_BG": "#3a2320",
+    "RELATED_BADGE_FG": "#f0a08d",
+    "STATUTE_BADGE_BG": "#3a3020",
+    "STATUTE_BADGE_FG": "#e8c98a",
+    "ONLY_B_TEXT": "#e3c07a",
+    "SHARED_TEXT": "#8fd3df",
+    "ONLY_A_TEXT": "#f0a08d",
+    "WARN_BG": "#3a2f1e",
+    "WARN_FG": "#e8c98a",
+    "WARN_FG2": "#e8c98a",
+    "SEV_MED": "#e8c98a",
+    "DISABLED_ACCENT_BG": "#3a4a4e",
+    "DISABLED_ACCENT_FG": "#8a969a",
+    "AI_ACTIVE": "#b8912f",
+    "AI_DISABLED_BG": "#4a4433",
+    "AI_DISABLED_FG": "#b9ae8e",
+}
+
+
+def normalize_theme(value: object) -> str:
+    return DARK_THEME if str(value or "").strip().lower() == DARK_THEME else LIGHT_THEME
+
+
+def apply_theme(name: str) -> None:
+    """Swap the module palette; callers rebuild widgets afterwards."""
+    globals().update(DARK_PALETTE if normalize_theme(name) == DARK_THEME else LIGHT_PALETTE)
+
+
+globals().update(LIGHT_PALETTE)
 
 FONT_UI = ("Segoe UI", 10)
 FONT_UI_BOLD = ("Segoe UI", 10, "bold")
@@ -270,8 +360,86 @@ class BookmarkStore:
 # Main application
 # ---------------------------------------------------------------------------
 
+class ThemedScrollbar(tk.Canvas):
+    """A small Canvas scrollbar so the thumb and trough follow the theme.
+
+    Windows draws both Tk and ttk scrollbars with a light system trough, which
+    stands out badly in dark mode.  This keeps the scrolling contract used by
+    the text/tree widgets (``set`` plus a ``yview`` command) without relying on
+    native scrollbar colors.
+    """
+
+    def __init__(self, parent, *, command, **kwargs):
+        kwargs.setdefault("width", 12)
+        kwargs.setdefault("bd", 0)
+        kwargs.setdefault("highlightthickness", 0)
+        super().__init__(parent, bg=BG, **kwargs)
+        self._command = command or (lambda *_args: None)
+        self._first = 0.0
+        self._last = 1.0
+        self._drag_offset = 0.0
+        self.bind("<Configure>", lambda _event: self._redraw())
+        self.bind("<Button-1>", self._press)
+        self.bind("<B1-Motion>", self._drag)
+        self.bind("<MouseWheel>", self._wheel)
+        self.bind("<Button-4>", lambda _event: self._command("scroll", -1, "units"))
+        self.bind("<Button-5>", lambda _event: self._command("scroll", 1, "units"))
+
+    def set(self, first, last) -> None:
+        try:
+            self._first = max(0.0, min(1.0, float(first)))
+            self._last = max(0.0, min(1.0, float(last)))
+        except (TypeError, ValueError):
+            return
+        self._redraw()
+
+    def _height(self) -> int:
+        return max(1, self.winfo_height())
+
+    def _fraction(self, y: int) -> float:
+        return max(0.0, min(1.0, y / self._height()))
+
+    def _redraw(self) -> None:
+        self.delete("all")
+        width = max(1, self.winfo_width())
+        height = max(1, self.winfo_height())
+        self.create_rectangle(0, 0, width, height, fill=BG, outline="")
+        if self._last - self._first >= 0.999:
+            return
+        top = int(self._first * height)
+        bottom = max(top + 22, int(self._last * height))
+        if bottom > height:
+            bottom = height
+            top = min(top, max(0, height - 22))
+        self.create_rectangle(2, top, width - 2, bottom, fill=FAINT, outline="")
+
+    def _press(self, event) -> None:
+        height = self._height()
+        top = self._first * height
+        bottom = self._last * height
+        if top <= event.y <= bottom:
+            self._drag_offset = event.y - top
+        else:
+            self._drag_offset = max(0.0, (bottom - top) / 2)
+            self._command("moveto", self._fraction(event.y - self._drag_offset))
+
+    def _drag(self, event) -> None:
+        self._command("moveto", self._fraction(event.y - self._drag_offset))
+
+    def _wheel(self, event) -> None:
+        step = -1 if event.delta > 0 else 1
+        self._command("scroll", step, "units")
+
+
 class TrecApp:
-    def __init__(self, root: tk.Tk, data_path: Path, *, auto_update: bool = True):
+    def __init__(
+        self,
+        root: tk.Tk,
+        data_path: Path,
+        *,
+        auto_update: bool = True,
+        theme: str | None = None,
+    ):
         self.root = root
         self.data_path = data_path
         self.library = Library(data_path)
@@ -288,6 +456,8 @@ class TrecApp:
         self.saved_current_uid: str | None = None
 
         settings = storage.read_settings()
+        self.theme = normalize_theme(theme or settings.get("theme"))
+        apply_theme(self.theme)
         self.ai_config = ai.config_from_settings(settings)
         if "ai_review" not in settings:
             self.ai_config = ai.default_config()
@@ -301,17 +471,159 @@ class TrecApp:
         self.ai_provider_label = self.ai_config.mode_label
 
         self._configure_root()
+        self._apply_window_chrome()
+        self._build_ui()
+        if self.auto_update:
+            self.root.after(1200, self._maybe_check_updates)
+
+    def _scrollbar(self, parent, *, orient: str = "vertical", command=None):
+        return ThemedScrollbar(parent, command=command)
+
+    def _build_ui(self) -> None:
         self._configure_styles()
         self._build_menu()
         self._build_header()
-        self._build_notebook()
         self._build_status_bar()
+        self._build_notebook()
         self._bind_shortcuts()
         self._show_search_empty()
         self._refresh_results(initial=True)
         self._refresh_saved()
-        if self.auto_update:
-            self.root.after(1200, self._maybe_check_updates)
+
+    def _apply_window_chrome(self) -> None:
+        """Ask DWM for a dark title bar when available; ignore failures."""
+        if os.name != "nt":
+            return
+        try:
+            self.root.update_idletasks()
+            hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
+            value = ctypes.c_int(1 if self.theme == DARK_THEME else 0)
+            for attribute in (20, 19):
+                result = ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                    hwnd, attribute, ctypes.byref(value), ctypes.sizeof(value)
+                )
+                if result == 0:
+                    break
+        except Exception:
+            pass
+
+    def _toggle_theme_shortcut(self) -> None:
+        self.theme_var.set(self.theme != DARK_THEME)
+        self.toggle_theme()
+
+    def toggle_theme(self) -> None:
+        target = DARK_THEME if self.theme_var.get() else LIGHT_THEME
+        if target == self.theme:
+            return
+        if self.ai_thread is not None and self.ai_thread.is_alive():
+            self.theme_var.set(self.theme == DARK_THEME)
+            messagebox.showinfo(
+                "AI review running",
+                "Cancel the AI review before changing the theme.",
+                parent=self.root,
+            )
+            return
+        if self._update_thread is not None and self._update_thread.is_alive():
+            self.theme_var.set(self.theme == DARK_THEME)
+            messagebox.showinfo(
+                "Rule update running",
+                "Wait for the library check to finish before changing the theme.",
+                parent=self.root,
+            )
+            return
+        try:
+            self._set_theme(target, persist=True)
+        except Exception as exc:
+            self.theme_var.set(self.theme == DARK_THEME)
+            messagebox.showerror(
+                "Could not change theme", str(exc), parent=self.root
+            )
+
+    def _set_theme(self, theme: str, *, persist: bool = True) -> None:
+        theme = normalize_theme(theme)
+        self.theme = theme
+        apply_theme(theme)
+        if persist:
+            settings = storage.read_settings()
+            settings["theme"] = theme
+            storage.write_settings(settings)
+        self._rebuild_ui()
+        self._apply_window_chrome()
+        self._flash_status(f"{theme.title()} mode")
+
+    def _capture_ui_state(self) -> dict:
+        return {
+            "query": self.search_entry.value(),
+            "section": self.current_section,
+            "a": self.scenario_a.value(),
+            "b": self.scenario_b.value(),
+            "comparison": self.comparison,
+            "analysis": self.ai_analysis,
+            "selected_row": self.selected_row,
+            "saved_uid": self.saved_current_uid,
+            "main_tab": self.notebook.index(self.notebook.select()),
+            "compare_tab": self.compare_notebook.index(
+                self.compare_notebook.select()
+            ),
+        }
+
+    def _rebuild_ui(self) -> None:
+        state = self._capture_ui_state()
+        if self.search_job:
+            try:
+                self.root.after_cancel(self.search_job)
+            except tk.TclError:
+                pass
+            self.search_job = None
+        for child in list(self.root.winfo_children()):
+            child.destroy()
+        try:
+            self.root.configure(menu="")
+        except tk.TclError:
+            pass
+        self.root.configure(bg=BG)
+        self._build_ui()
+        self._restore_ui_state(state)
+
+    def _restore_ui_state(self, state: dict) -> None:
+        self.scenario_a.set_value(state["a"])
+        self.scenario_b.set_value(state["b"])
+        self._update_scenario_counts()
+
+        query = state["query"]
+        if query:
+            self.search_entry.set_value(query)
+            self._run_search()
+        section = state["section"]
+        if section is not None:
+            self._show_section(section, query)
+
+        report = state["comparison"]
+        if report is not None:
+            self.comparison = report
+            self._render_comparison(report)
+            analysis = state["analysis"]
+            if analysis is not None:
+                self.ai_analysis = analysis
+                self._render_ai_analysis(analysis)
+            if state["selected_row"] is not None:
+                self._show_authority_row(state["selected_row"])
+
+        self._refresh_saved()
+        saved_uid = state["saved_uid"]
+        if saved_uid and self.saved_tree.exists(saved_uid):
+            self.saved_tree.selection_set(saved_uid)
+            self._on_saved_select()
+
+        main_tabs = self.notebook.tabs()
+        if main_tabs:
+            index = min(max(state["main_tab"], 0), len(main_tabs) - 1)
+            self.notebook.select(main_tabs[index])
+        if report is not None:
+            compare_tabs = self.compare_notebook.tabs()
+            if compare_tabs:
+                index = min(max(state["compare_tab"], 0), len(compare_tabs) - 1)
+                self.compare_notebook.select(compare_tabs[index])
 
     # -- window / styles -----------------------------------------------------
     def _configure_root(self) -> None:
@@ -385,15 +697,15 @@ class TrecApp:
             padding=(14, 8),
             font=FONT_UI_BOLD,
             background=TEAL,
-            foreground=WHITE,
+            foreground=ACCENT_FG,
             bordercolor=TEAL,
             lightcolor=TEAL,
             darkcolor=TEAL,
         )
         style.map(
             "Accent.TButton",
-            background=[("active", NAVY), ("disabled", "#a9b8b8")],
-            foreground=[("disabled", "#f0f0e8")],
+            background=[("active", NAVY), ("disabled", DISABLED_ACCENT_BG)],
+            foreground=[("disabled", DISABLED_ACCENT_FG)],
         )
         style.configure(
             "Ghost.TButton",
@@ -412,15 +724,15 @@ class TrecApp:
             padding=(14, 8),
             font=FONT_UI_BOLD,
             background=GOLD,
-            foreground=INK,
+            foreground=AI_FG,
             bordercolor=GOLD,
             lightcolor=GOLD,
             darkcolor=GOLD,
         )
         style.map(
             "AI.TButton",
-            background=[("active", "#a9822c"), ("disabled", "#d8c9a1")],
-            foreground=[("disabled", "#6f6753")],
+            background=[("active", AI_ACTIVE), ("disabled", AI_DISABLED_BG)],
+            foreground=[("disabled", AI_DISABLED_FG)],
         )
 
         style.configure(
@@ -429,6 +741,11 @@ class TrecApp:
             fieldbackground=SURFACE,
             background=SURFACE,
             foreground=INK,
+            arrowcolor=MUTED,
+            bordercolor=BORDER,
+            lightcolor=BORDER,
+            darkcolor=BORDER,
+            insertcolor=INK,
             arrowsize=14,
         )
         style.map(
@@ -437,6 +754,35 @@ class TrecApp:
             foreground=[("readonly", INK)],
             selectbackground=[("readonly", SURFACE)],
             selectforeground=[("readonly", INK)],
+            arrowcolor=[("active", TEAL)],
+            bordercolor=[("focus", TEAL)],
+        )
+        style.configure(
+            "TEntry",
+            fieldbackground=SURFACE,
+            foreground=INK,
+            insertcolor=INK,
+            bordercolor=BORDER,
+            lightcolor=BORDER,
+            darkcolor=BORDER,
+        )
+        style.configure(
+            "TCheckbutton", background=SURFACE, foreground=INK, font=FONT_UI
+        )
+        style.configure(
+            "MenuBar.TButton",
+            background=SURFACE_ALT,
+            foreground=INK,
+            font=FONT_SMALL,
+            padding=(9, 2),
+            relief="flat",
+            borderwidth=0,
+            anchor="w",
+        )
+        style.map(
+            "MenuBar.TButton",
+            background=[("active", TEAL)],
+            foreground=[("active", ACCENT_FG)],
         )
 
         style.configure(
@@ -451,7 +797,7 @@ class TrecApp:
         style.map(
             "Treeview",
             background=[("selected", TEAL)],
-            foreground=[("selected", WHITE)],
+            foreground=[("selected", ACCENT_FG)],
         )
         style.configure(
             "Treeview.Heading",
@@ -478,26 +824,98 @@ class TrecApp:
             foreground=[("selected", TEAL), ("active", INK)],
         )
         style.configure("TSeparator", background=BORDER)
+        style.configure(
+            "TScrollbar",
+            background=SOFT,
+            troughcolor=BG,
+            bordercolor=BORDER,
+            arrowcolor=MUTED,
+            lightcolor=SOFT,
+            darkcolor=SOFT,
+        )
+        style.map(
+            "TScrollbar",
+            background=[("active", TEAL)],
+            arrowcolor=[("active", ACCENT_FG)],
+        )
         style.configure("Vertical.TScrollbar", background=SOFT, troughcolor=BG, arrowcolor=MUTED)
         style.configure("Horizontal.TScrollbar", background=SOFT, troughcolor=BG, arrowcolor=MUTED)
         style.configure("TPanedwindow", background=BG)
         style.configure("Sash", sashthickness=8, gripcount=0, background=BG)
+        for pattern, value in (
+            ("*TCombobox*Listbox.background", SURFACE),
+            ("*TCombobox*Listbox.foreground", INK),
+            ("*TCombobox*Listbox.selectBackground", TEAL),
+            ("*TCombobox*Listbox.selectForeground", ACCENT_FG),
+            ("*Entry.selectBackground", TEAL),
+            ("*Entry.selectForeground", ACCENT_FG),
+            ("*Text.selectBackground", TEAL),
+            ("*Text.selectForeground", ACCENT_FG),
+        ):
+            try:
+                self.root.option_add(pattern, value)
+            except tk.TclError:
+                pass
+
+    def _make_menu(self, parent) -> tk.Menu:
+        return tk.Menu(
+            parent,
+            tearoff=False,
+            font=FONT_UI,
+            bg=SURFACE,
+            fg=INK,
+            activebackground=TEAL,
+            activeforeground=ACCENT_FG,
+            bd=0,
+        )
 
     def _build_menu(self) -> None:
-        menubar = tk.Menu(self.root, tearoff=False, font=FONT_UI)
-        file_menu = tk.Menu(menubar, tearoff=False, font=FONT_UI)
+        # A custom menu bar keeps the menu dark on Windows; the native Tk
+        # menubar ignores menu colors and stays light.
+        bar = tk.Frame(self.root, bg=SURFACE_ALT, height=26)
+        bar.pack(fill="x", side="top")
+        bar.pack_propagate(False)
+
+        def add_menu(label: str, menu: tk.Menu) -> None:
+            button = ttk.Button(
+                bar,
+                text=label,
+                style="MenuBar.TButton",
+                takefocus=False,
+                cursor="hand2",
+            )
+            button.pack(side="left")
+
+            def open_menu(m: tk.Menu = menu, w: ttk.Button = button) -> None:
+                try:
+                    m.post(w.winfo_rootx(), w.winfo_rooty() + w.winfo_height())
+                except tk.TclError:
+                    pass
+
+            button.configure(command=open_menu)
+
+        file_menu = self._make_menu(bar)
         file_menu.add_command(label="Export comparison…", accelerator="Ctrl+E", command=self.export_comparison)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.destroy)
-        menubar.add_cascade(label="File", menu=file_menu)
+        add_menu("File", file_menu)
 
-        edit_menu = tk.Menu(menubar, tearoff=False, font=FONT_UI)
+        edit_menu = self._make_menu(bar)
         edit_menu.add_command(label="Focus search", accelerator="Ctrl+F", command=self.focus_search)
         edit_menu.add_command(label="Copy citation", command=self.copy_citation)
         edit_menu.add_command(label="Copy section text", command=self.copy_section)
-        menubar.add_cascade(label="Edit", menu=edit_menu)
+        add_menu("Edit", edit_menu)
 
-        tools_menu = tk.Menu(menubar, tearoff=False, font=FONT_UI)
+        view_menu = self._make_menu(bar)
+        self.theme_var = tk.BooleanVar(value=self.theme == DARK_THEME)
+        view_menu.add_checkbutton(
+            label="Dark mode",
+            variable=self.theme_var,
+            command=self.toggle_theme,
+        )
+        add_menu("View", view_menu)
+
+        tools_menu = self._make_menu(bar)
         tools_menu.add_command(
             label="Check for rule updates now",
             command=lambda: self._start_update_check(force=True),
@@ -511,7 +929,7 @@ class TrecApp:
             command=self._reload_library,
         )
         tools_menu.add_separator()
-        ai_menu = tk.Menu(tools_menu, tearoff=False, font=FONT_UI)
+        ai_menu = self._make_menu(tools_menu)
         ai_menu.add_command(
             label="Run AI review",
             accelerator="Ctrl+Shift+A",
@@ -526,17 +944,17 @@ class TrecApp:
             label="AI review settings…", command=self.show_ai_settings
         )
         tools_menu.add_cascade(label="AI review", menu=ai_menu)
-        menubar.add_cascade(label="Tools", menu=tools_menu)
+        add_menu("Tools", tools_menu)
 
-        help_menu = tk.Menu(menubar, tearoff=False, font=FONT_UI)
+        help_menu = self._make_menu(bar)
         help_menu.add_command(label="Quick start", command=self.show_help)
         help_menu.add_command(label="How AI review works", command=self._show_ai_help)
         help_menu.add_command(label="Official sources", command=self.open_official_sources)
         help_menu.add_command(label="About this library", command=self.show_about)
         help_menu.add_separator()
         help_menu.add_command(label="Disclaimer", command=lambda: messagebox.showinfo("Disclaimer", DISCLAIMER, parent=self.root))
-        menubar.add_cascade(label="Help", menu=help_menu)
-        self.root.configure(menu=menubar)
+        add_menu("Help", help_menu)
+        self.menu_bar = bar
 
     def _build_header(self) -> None:
         header = tk.Frame(self.root, bg=NAVY, height=84)
@@ -561,24 +979,24 @@ class TrecApp:
         tk.Label(
             text_box,
             text="Texas Real Estate Commission rules & statutes  ·  search, compare, cite",
-            bg=NAVY, fg="#b9cdd0", font=("Segoe UI", 9), anchor="w",
+            bg=NAVY, fg=HEADER_SUBTITLE, font=("Segoe UI", 9), anchor="w",
         ).pack(anchor="w", pady=(2, 0))
 
         right = tk.Frame(header, bg=NAVY)
         right.pack(side="right", padx=(0, 24), pady=18)
 
-        snapshot = tk.Frame(right, bg=NAVY_DARK, highlightbackground="#2d5c66", highlightthickness=1)
+        snapshot = tk.Frame(right, bg=NAVY_DARK, highlightbackground=HEADER_BORDER, highlightthickness=1)
         snapshot.pack(side="left", padx=(0, 14))
         self.snapshot_label = tk.Label(
             snapshot,
             text=f"LIBRARY  ·  {self.library.meta.get('generated_at_display', 'current')}",
-            bg=NAVY_DARK, fg="#d8e4e3", font=("Segoe UI", 8, "bold"),
+            bg=NAVY_DARK, fg=HEADER_CHIP_TEXT, font=("Segoe UI", 8, "bold"),
             padx=10, pady=6,
         )
         self.snapshot_label.pack()
 
         sources = tk.Label(
-            right, text="Official sources ↗", bg=NAVY, fg="#e5d19a",
+            right, text="Official sources ↗", bg=NAVY, fg=HEADER_LINK,
             font=("Segoe UI", 9, "underline"), cursor="hand2",
         )
         sources.pack(side="left", padx=(0, 16))
@@ -610,7 +1028,7 @@ class TrecApp:
         self._build_saved_tab()
 
     def _build_status_bar(self) -> None:
-        bar = tk.Frame(self.root, bg="#e9e3d5", height=27)
+        bar = tk.Frame(self.root, bg=STATUS_BG, height=27)
         bar.pack(fill="x", side="bottom")
         bar.pack_propagate(False)
         counts = self.library.meta.get("counts", {})
@@ -623,13 +1041,13 @@ class TrecApp:
         self.status_left = tk.Label(
             bar,
             text=self._status_base_text,
-            bg="#e9e3d5", fg=MUTED, font=("Segoe UI", 8), anchor="w",
+            bg=STATUS_BG, fg=MUTED, font=("Segoe UI", 8), anchor="w",
         )
         self.status_left.pack(side="left", padx=18)
         tk.Label(
             bar,
             text="Educational research aid — verify the official text",
-            bg="#e9e3d5", fg="#8a7a58", font=("Segoe UI", 8),
+            bg=STATUS_BG, fg=STATUS_TEXT, font=("Segoe UI", 8),
         ).pack(side="right", padx=18)
 
     def _bind_shortcuts(self) -> None:
@@ -640,6 +1058,8 @@ class TrecApp:
         self.root.bind("<Control-Return>", lambda _e: self.run_comparison())
         self.root.bind("<Control-Shift-A>", lambda _e: self.run_ai_review())
         self.root.bind("<Control-Shift-a>", lambda _e: self.run_ai_review())
+        self.root.bind("<Control-Shift-D>", lambda _e: self._toggle_theme_shortcut())
+        self.root.bind("<Control-Shift-d>", lambda _e: self._toggle_theme_shortcut())
         self.root.bind("<F1>", lambda _e: self.show_help())
         self.root.bind("<Control-Key-1>", lambda _e: self.notebook.select(self.search_tab))
         self.root.bind("<Control-Key-2>", lambda _e: self.notebook.select(self.compare_tab))
@@ -766,11 +1186,11 @@ class TrecApp:
         self.result_tree.column("cite", width=112, minwidth=96, stretch=False, anchor="w")
         self.result_tree.column("title", width=240, minwidth=160, stretch=True, anchor="w")
         self.result_tree.grid(row=0, column=0, sticky="nsew")
-        scroll = ttk.Scrollbar(tree_wrap, orient="vertical", command=self.result_tree.yview)
+        scroll = self._scrollbar(tree_wrap, orient="vertical", command=self.result_tree.yview)
         scroll.grid(row=0, column=1, sticky="ns")
         self.result_tree.configure(yscrollcommand=scroll.set)
-        self.result_tree.tag_configure("rule", foreground="#1c5969")
-        self.result_tree.tag_configure("statute", foreground="#75501f")
+        self.result_tree.tag_configure("rule", foreground=RULE_TEXT)
+        self.result_tree.tag_configure("statute", foreground=STATUTE_TEXT)
         self.result_tree.tag_configure("group", font=("Segoe UI", 9, "bold"), foreground=MUTED)
         self.result_tree.bind("<<TreeviewSelect>>", self._on_result_select)
         self.result_tree.bind("<Double-1>", lambda _e: self.focus_search())
@@ -875,7 +1295,7 @@ class TrecApp:
             spacing1=2, spacing3=6, cursor="arrow",
         )
         self.detail_text.grid(row=0, column=0, sticky="nsew")
-        detail_scroll = ttk.Scrollbar(text_wrap, orient="vertical", command=self.detail_text.yview)
+        detail_scroll = self._scrollbar(text_wrap, orient="vertical", command=self.detail_text.yview)
         detail_scroll.grid(row=0, column=1, sticky="ns")
         self.detail_text.configure(yscrollcommand=detail_scroll.set)
         self.detail_text.tag_configure("body", font=FONT_BODY, foreground=INK, spacing1=2, spacing3=6)
@@ -1034,9 +1454,9 @@ class TrecApp:
         if section.kind == "Rule":
             badge_text, badge_bg, badge_fg = "TREC RULE", CHIP, CHIP_TEXT
         elif section.source_id == "oc53":
-            badge_text, badge_bg, badge_fg = "RELATED STATUTE", "#f1e4e0", "#7c3f2f"
+            badge_text, badge_bg, badge_fg = "RELATED STATUTE", RELATED_BADGE_BG, RELATED_BADGE_FG
         else:
-            badge_text, badge_bg, badge_fg = "TEXAS STATUTE", "#f3e6d1", "#7c541f"
+            badge_text, badge_bg, badge_fg = "TEXAS STATUTE", STATUTE_BADGE_BG, STATUTE_BADGE_FG
         self.kind_badge.configure(
             text=badge_text,
             bg=badge_bg,
@@ -1053,8 +1473,8 @@ class TrecApp:
             child.destroy()
         for tag in section.tags[:3]:
             chip = tk.Label(
-                self.tag_row, text=tag, bg=CHIP if section.kind == "Rule" else "#f3e6d1",
-                fg=CHIP_TEXT if section.kind == "Rule" else "#7c541f",
+                self.tag_row, text=tag, bg=CHIP if section.kind == "Rule" else STATUTE_BADGE_BG,
+                fg=CHIP_TEXT if section.kind == "Rule" else STATUTE_BADGE_FG,
                 font=("Segoe UI", 8), padx=7, pady=3,
             )
             chip.pack(side="left", padx=(0, 5))
@@ -1438,7 +1858,7 @@ class TrecApp:
         self.compare_count.grid(row=0, column=1, sticky="e")
         legend = tk.Frame(left, bg=SURFACE)
         legend.grid(row=1, column=0, sticky="ew", padx=16, pady=(2, 6))
-        for text, color in (("Shared", TEAL), ("Only A", BRICK), ("Only B", "#7a541c")):
+        for text, color in (("Shared", TEAL), ("Only A", BRICK), ("Only B", ONLY_B_TEXT)):
             tk.Label(
                 legend, text="● " + text, bg=SURFACE, fg=color,
                 font=("Segoe UI", 8),
@@ -1462,13 +1882,13 @@ class TrecApp:
         self.compare_tree.column("a", width=42, minwidth=36, stretch=False, anchor="center")
         self.compare_tree.column("b", width=42, minwidth=36, stretch=False, anchor="center")
         self.compare_tree.grid(row=0, column=0, sticky="nsew")
-        cscroll = ttk.Scrollbar(tree_wrap, orient="vertical", command=self.compare_tree.yview)
+        cscroll = self._scrollbar(tree_wrap, orient="vertical", command=self.compare_tree.yview)
         cscroll.grid(row=0, column=1, sticky="ns")
         self.compare_tree.configure(yscrollcommand=cscroll.set)
         self.compare_tree.tag_configure("group", font=("Segoe UI", 9, "bold"), foreground=MUTED)
-        self.compare_tree.tag_configure("shared", foreground="#174f59")
-        self.compare_tree.tag_configure("onlya", foreground="#8d3b2a")
-        self.compare_tree.tag_configure("onlyb", foreground="#76501c")
+        self.compare_tree.tag_configure("shared", foreground=SHARED_TEXT)
+        self.compare_tree.tag_configure("onlya", foreground=ONLY_A_TEXT)
+        self.compare_tree.tag_configure("onlyb", foreground=ONLY_B_TEXT)
         self.compare_tree.bind("<<TreeviewSelect>>", self._on_compare_select)
 
         right = tk.Frame(body, bg=SURFACE, highlightbackground=BORDER, highlightthickness=1)
@@ -1509,7 +1929,7 @@ class TrecApp:
         head.grid(row=0, column=0, sticky="ew", padx=12, pady=(8, 2))
         head.grid_columnconfigure(1, weight=1)
         tk.Label(
-            head, text=letter, bg=accent, fg=WHITE, font=("Segoe UI", 8, "bold"),
+            head, text=letter, bg=accent, fg=ACCENT_FG, font=("Segoe UI", 8, "bold"),
             width=3, pady=2,
         ).grid(row=0, column=0, sticky="w", padx=(0, 8))
         tk.Label(
@@ -1562,7 +1982,7 @@ class TrecApp:
             spacing1=2, spacing3=5, cursor="arrow",
         )
         self.brief_text.grid(row=0, column=0, sticky="nsew")
-        scroll = ttk.Scrollbar(wrap, orient="vertical", command=self.brief_text.yview)
+        scroll = self._scrollbar(wrap, orient="vertical", command=self.brief_text.yview)
         scroll.grid(row=0, column=1, sticky="ns")
         self.brief_text.configure(yscrollcommand=scroll.set)
         self.brief_text.tag_configure("kicker", foreground=GOLD, font=("Segoe UI", 8, "bold"))
@@ -1572,7 +1992,7 @@ class TrecApp:
         self.brief_text.tag_configure("bullet", foreground=INK, font=("Segoe UI", 10), lmargin1=16, lmargin2=30, spacing3=4)
         self.brief_text.tag_configure("cite", foreground=TEAL, font=("Consolas", 9, "bold"))
         self.brief_text.tag_configure("muted", foreground=MUTED, font=("Segoe UI", 9))
-        self.brief_text.tag_configure("warn", foreground="#7b5a2a", background="#f7edda", font=("Segoe UI", 9))
+        self.brief_text.tag_configure("warn", foreground=WARN_FG, background=WARN_BG, font=("Segoe UI", 9))
         self.brief_text.tag_configure("divider", foreground=BORDER)
 
         footer = tk.Frame(self.brief_tab, bg=SURFACE_ALT)
@@ -1664,7 +2084,7 @@ class TrecApp:
             spacing1=2, spacing3=5, cursor="arrow",
         )
         self.ai_text.grid(row=0, column=0, sticky="nsew")
-        ai_scroll = ttk.Scrollbar(wrap, orient="vertical", command=self.ai_text.yview)
+        ai_scroll = self._scrollbar(wrap, orient="vertical", command=self.ai_text.yview)
         ai_scroll.grid(row=0, column=1, sticky="ns")
         self.ai_text.configure(yscrollcommand=ai_scroll.set)
         self.ai_text.tag_configure("kicker", foreground=GOLD, font=("Segoe UI", 8, "bold"))
@@ -1674,7 +2094,7 @@ class TrecApp:
         self.ai_text.tag_configure("bullet", foreground=INK, font=("Segoe UI", 10), lmargin1=16, lmargin2=30, spacing3=4)
         self.ai_text.tag_configure("cite", foreground=TEAL, font=("Consolas", 9, "bold"))
         self.ai_text.tag_configure("muted", foreground=MUTED, font=("Segoe UI", 9))
-        self.ai_text.tag_configure("warn", foreground="#7b5a2a", background="#f7edda", font=("Segoe UI", 9))
+        self.ai_text.tag_configure("warn", foreground=WARN_FG, background=WARN_BG, font=("Segoe UI", 9))
         self.ai_text.tag_configure("divider", foreground=BORDER)
         self.ai_text.tag_configure(
             "verdict", foreground=INK, background=CHIP, font=("Segoe UI", 10),
@@ -1682,7 +2102,7 @@ class TrecApp:
         )
         self.ai_text.tag_configure("flagtitle", foreground=INK, font=("Segoe UI", 10, "bold"), spacing3=2)
         self.ai_text.tag_configure("sev-high", foreground=BRICK, font=("Segoe UI", 9, "bold"))
-        self.ai_text.tag_configure("sev-medium", foreground="#8a5a1f", font=("Segoe UI", 9, "bold"))
+        self.ai_text.tag_configure("sev-medium", foreground=SEV_MED, font=("Segoe UI", 9, "bold"))
         self.ai_text.tag_configure("sev-low", foreground=MUTED, font=("Segoe UI", 9, "bold"))
 
         footer = tk.Frame(self.ai_tab, bg=SURFACE_ALT)
@@ -2179,7 +2599,7 @@ class TrecApp:
             font=("Consolas", 9), padx=10, pady=8, highlightthickness=0,
         )
         text.grid(row=0, column=0, sticky="nsew")
-        scroll = ttk.Scrollbar(wrap, orient="vertical", command=text.yview)
+        scroll = self._scrollbar(wrap, orient="vertical", command=text.yview)
         scroll.grid(row=0, column=1, sticky="ns")
         text.configure(yscrollcommand=scroll.set)
 
@@ -2466,7 +2886,7 @@ class TrecApp:
             text="The free tier uses the Gemini API. If a run says "
                  "SERVICE_DISABLED, enable the API for the key's Google Cloud "
                  "project, or create a free key at https://aistudio.google.com/apikey.",
-            bg="#f7edda", fg="#6d5528", font=("Segoe UI", 8), anchor="w",
+            bg=WARN_BG, fg=WARN_FG2, font=("Segoe UI", 8), anchor="w",
             justify="left", wraplength=600, padx=8, pady=6,
         )
         gemini_note.grid(row=row, column=0, columnspan=2, sticky="ew", pady=(4, 8))
@@ -2512,7 +2932,7 @@ class TrecApp:
             text="Privacy: a local CLI runs on this computer, but the model "
                  "provider it uses still receives the scenarios and authority "
                  "text. API modes send the same material to the endpoint above.",
-            bg="#f7edda", fg="#6d5528", font=("Segoe UI", 8), anchor="w",
+            bg=WARN_BG, fg=WARN_FG2, font=("Segoe UI", 8), anchor="w",
             justify="left", wraplength=720, padx=10, pady=8,
         )
         note.grid(row=4, column=0, sticky="ew", pady=(4, 4))
@@ -2789,8 +3209,8 @@ class TrecApp:
         ).grid(row=0, column=0, sticky="w")
         tk.Label(
             head, text="RULE" if row.section.kind == "Rule" else "STATUTE",
-            bg=CHIP if row.section.kind == "Rule" else "#f3e6d1",
-            fg=CHIP_TEXT if row.section.kind == "Rule" else "#7c541f",
+            bg=CHIP if row.section.kind == "Rule" else STATUTE_BADGE_BG,
+            fg=CHIP_TEXT if row.section.kind == "Rule" else STATUTE_BADGE_FG,
             font=("Segoe UI", 8, "bold"), padx=7, pady=2,
         ).grid(row=0, column=1, sticky="e", padx=(0, 8))
         ttk.Button(
@@ -2839,7 +3259,7 @@ class TrecApp:
             spacing1=1, spacing3=4, cursor="arrow",
         )
         txt.grid(row=0, column=0, sticky="nsew")
-        txt_scroll = ttk.Scrollbar(text_wrap, orient="vertical", command=txt.yview)
+        txt_scroll = self._scrollbar(text_wrap, orient="vertical", command=txt.yview)
         txt_scroll.grid(row=0, column=1, sticky="ns")
         txt.configure(yscrollcommand=txt_scroll.set)
         txt.insert("1.0", row.section.body)
@@ -3180,7 +3600,7 @@ class TrecApp:
         self.saved_tree.column("cite", width=108, minwidth=94, stretch=False)
         self.saved_tree.column("title", width=280, minwidth=170, stretch=True)
         self.saved_tree.grid(row=0, column=0, sticky="nsew")
-        ss = ttk.Scrollbar(tree_wrap, orient="vertical", command=self.saved_tree.yview)
+        ss = self._scrollbar(tree_wrap, orient="vertical", command=self.saved_tree.yview)
         ss.grid(row=0, column=1, sticky="ns")
         self.saved_tree.configure(yscrollcommand=ss.set)
         self.saved_tree.bind("<<TreeviewSelect>>", self._on_saved_select)
@@ -3213,7 +3633,7 @@ class TrecApp:
             highlightbackground=BORDER, highlightcolor=TEAL, spacing1=2, spacing3=3,
         )
         self.saved_note.grid(row=0, column=0, sticky="nsew")
-        note_scroll = ttk.Scrollbar(note_wrap, orient="vertical", command=self.saved_note.yview)
+        note_scroll = self._scrollbar(note_wrap, orient="vertical", command=self.saved_note.yview)
         note_scroll.grid(row=0, column=1, sticky="ns")
         self.saved_note.configure(yscrollcommand=note_scroll.set)
         self.saved_note.insert(

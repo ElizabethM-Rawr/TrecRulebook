@@ -76,6 +76,12 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Build the window, update once, and exit (for installation checks).",
     )
+    parser.add_argument(
+        "--theme",
+        choices=["light", "dark"],
+        default=None,
+        help="Override the saved appearance for this run.",
+    )
     args = parser.parse_args(argv)
 
     bundled_path = (ROOT / "data" / "trec_library.json").resolve()
@@ -105,6 +111,7 @@ def main(argv: list[str] | None = None) -> int:
             root,
             data_path,
             auto_update=not args.no_update_check and not args.smoke_test,
+            theme=args.theme,
         )
     except Exception as exc:  # pragma: no cover - startup failure UI path
         _log_startup_error(exc)

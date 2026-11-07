@@ -268,13 +268,14 @@
     "applicationCategory": "BusinessApplication",
     "applicationSubCategory": "Legal research",
     "operatingSystem": "Windows 10, Windows 11",
-    "softwareVersion": "1.4.0",
+    "softwareVersion": "1.5.0",
     "datePublished": "2026-11-06",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "featureList": [
       "Full-text search across TREC rules and Texas statutes",
       "Side-by-side scenario comparison",
       "Optional AI red-flag review with citation checks",
+      "Light and dark appearance, switchable at runtime",
       "Copy-ready legal citations",
       "Official source links",
       "Bookmarks and local notes",
@@ -311,6 +312,11 @@
         "@type": "Question",
         "name": "Is TREC Rulebook free?",
         "acceptedAnswer": { "@type": "Answer", "text": "Yes. The app is free and the source code is public on GitHub. Download the Windows build from GitHub Releases; no account is required." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a dark mode?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Choose View → Dark mode or press Ctrl+Shift+D. The switch is immediate and keeps the current scenarios, search, comparison, and AI review. The choice is saved for the next start; python app.py --theme dark previews it for one run." }
       },
       {
         "@type": "Question",
@@ -551,6 +557,10 @@
           <p>Yes. The app is free and the source code is public on GitHub. Download the Windows build from GitHub Releases; no account is required.</p>
         </details>
         <details>
+          <summary>Is there a dark mode?</summary>
+          <p>Yes. Choose <strong>View → Dark mode</strong> or press <code>Ctrl+Shift+D</code>. The switch is immediate and keeps the current scenarios, search, comparison, and AI review. The choice is saved for the next start; <code>python app.py --theme dark</code> previews it for one run.</p>
+        </details>
+        <details>
           <summary>Does it work offline?</summary>
           <p>Yes for search, comparison, bookmarks, and notes; the rules and statutes are bundled. AI review defaults to the Gemini free tier when a key is configured (otherwise the free local account); it never runs until you ask. When you run it, the scenarios and retrieved authority text go to the provider you configured (Gemini, DeepSeek Harness, Claude Code, or an API endpoint). Manual copy-and-paste never contacts a provider from the app.</p>
         </details>
@@ -579,7 +589,7 @@
           <div>
             <h2>Download TREC Rulebook</h2>
             <p>Free for Windows 10 and 11. The portable ZIP is recommended; the single EXE is the smallest download.</p>
-            <p class="fine">No installer · No account · Library included · v1.4.0</p>
+            <p class="fine">No installer · No account · Library included · v1.5.0</p>
           </div>
           <div class="cta-row">
             <a class="button button-primary" href="https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest">

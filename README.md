@@ -14,7 +14,8 @@ It gives you three things in one window:
 1. **Instant search** across 515 sections of TREC rules and Texas statutes, with citations, official links, and in-document highlighting.
 2. **Scenario comparison** — paste two fact patterns and get a brief showing shared issues, unique issues, the authorities each one raises, and requirement-style sentences to verify.
 3. **Optional AI review** — a severity-ranked second opinion with red flags, key differences, missing facts, and a citation check.
-4. **Saved authorities and notes** for building your own research set.
+4. **Light and dark appearance** — switch at runtime; the choice is remembered.
+5. **Saved authorities and notes** for building your own research set.
 
 Everything needed for search and comparison runs offline after the library is
 downloaded. AI review defaults to the Gemini free tier when a Gemini key is
@@ -216,6 +217,15 @@ python -m trec_explorer.ai_cli run --packet packet.json --mode harness --out rev
 
 The packet is plain JSON: scenarios, issue overlap, deterministic pre-check signals, and the selected authorities with text. `review` validates the schema, checks citations, and renders the same Markdown the app exports. `run --mode` accepts `gemini`, `harness`, `claude-cli`, `api`, or `anthropic`.
 
+### Appearance and dark mode
+
+![Dark mode](docs/dark.png)
+
+- Choose **View → Dark mode**, or press `Ctrl+Shift+D`, to switch immediately.
+- The switch rebuilds the window in place and keeps the current scenarios, search, selected section, comparison, authority detail, and AI review.
+- The choice is saved in `%APPDATA%\TRECRulesExplorer\settings.json` and applied on the next start.
+- To preview a theme for one run: `python app.py --theme dark` (or `--theme light`). The default on a fresh install is light.
+
 ### Saved
 
 Bookmarks and notes are stored locally:
@@ -333,6 +343,10 @@ Yes. The app is free and the source is public. Download the Windows build from G
 ### Does it work offline?
 
 Yes for search, comparison, bookmarks, and notes; the rules and statutes are bundled. AI review needs the provider you choose: the local DeepSeek Harness (which still calls its model provider), an API endpoint, or a manual copy-and-paste round trip. Local search and comparison never contact the network.
+
+### Is there a dark mode?
+
+Yes. Choose **View → Dark mode** or press `Ctrl+Shift+D`. The switch is immediate and keeps your current scenarios, search, comparison, and AI review. The choice is saved for the next start. `python app.py --theme dark` previews it without changing the saved setting.
 
 ### Is this legal advice?
 
