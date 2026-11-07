@@ -35,8 +35,8 @@ choose.
 
 Get the newest build from **[GitHub Releases](https://github.com/ElizabethM-Rawr/TrecRulebook/releases/latest)**:
 
-- **Portable ZIP** — recommended; unzip and run `TRECRulebook.exe`. No installer.
-- **Single EXE** — one file; Windows may show a SmartScreen warning for a new unsigned build.
+- **Portable ZIP** — recommended; unzip the folder and run `TRECRulebook\TRECRulebook.exe`. Keep `_internal` next to it. No installer.
+- **Single EXE** — available in the v1.4.0 release and reproducible with `build_exe.bat`; Windows may show a SmartScreen warning for a new unsigned build.
 
 The app is free, requires no account, and includes the full 515-section library.
 
